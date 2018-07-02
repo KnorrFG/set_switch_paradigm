@@ -1,0 +1,8 @@
+{
+    "python.pythonPath": "/home/klipsy1.psych.tu-dresden.de/knorr/miniconda3/envs/par_33_2/bin/python",
+    "python.linting.enabled": false,
+    "python.unitTest.promptToConfigure": false,
+    "python.unitTest.pyTestEnabled": false,
+    "python.unitTest.unittestEnabled": false,
+    "python.unitTest.nosetestsEnabled": false
+}
