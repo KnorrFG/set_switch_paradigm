@@ -23,11 +23,15 @@ class EventListener(object):
             and pygame.key.get_mods() & pygame.KMOD_CTRL:
             pygame.quit()
             exit(1)
+        else:
+            return EventConsumerInfo.DONT_CARE
+
 
     def __init__(self, permanently_applied_functions=None):
         self.permanently_applied_functions = permanently_applied_functions + (
             EventListener._exit_on_ctrl_c,
         )
+
 
     def listen(self, functions = None):
         if functions:
@@ -37,13 +41,14 @@ class EventListener(object):
 
         for event in pygame.event.get():
             for func in funcs:
+                #import ipdb; ipdb.set_trace()
                 ret = func(event)
                 if ret == EventConsumerInfo.CONSUMED: break
                 if ret == EventConsumerInfo.DONT_CARE: continue
                 else: return ret
 
 
-    def wait_for_keypress(self, key):
+    def wait_for_keypress(self, key, n=1):
         my_const = "key_consumed"
         keypress_listener = lambda e: my_const \
             if e.type == pygame.KEYDOWN and e.key == key \
