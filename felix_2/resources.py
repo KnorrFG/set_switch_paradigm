@@ -28,13 +28,14 @@ class Resources(object):
         
     @staticmethod
     def _make_font():
-        return pygame.font.SysFont(c.Instruction.font, c.Instruction.font_size)
+        return pygame.font.SysFont(c.Text.font, c.Text.font_size)
 
 
     @staticmethod
     def _load_stimuli(prefix, path):
+        #import ipdb; ipdb.set_trace()
         imgPath = pathlib.Path(path)
-        images = imgPath.glob(prefix + "*.gif")
+        images = list(imgPath.glob(prefix + "*.gif"))
         imagePairs = []
 
         def load(x):
@@ -66,8 +67,8 @@ class Resources(object):
 
     
     def _make_instruction_text(self):
-        return self.font.render(c.Instruction.text, 
-            False, c.Instruction.text_color)
+        return self.font.render(c.Text.instruction, 
+            False, c.Text.text_color)
 
 
     @property

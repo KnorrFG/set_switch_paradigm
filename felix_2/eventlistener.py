@@ -28,12 +28,14 @@ class EventListener(object):
 
 
     def __init__(self, permanently_applied_functions=None):
-        self.permanently_applied_functions = permanently_applied_functions + (
+        self.permanently_applied_functions = (
             EventListener._exit_on_ctrl_c,
         )
+        if permanently_applied_functions:
+            self.permanently_applied_functions += permanently_applied_functions
 
 
-    def listen(self, functions = None):
+    def listen(self, functions = None, timeout=0):
         if functions:
             funcs = self.permanently_applied_functions + functions
         else:
@@ -49,14 +51,32 @@ class EventListener(object):
 
 
     def wait_for_keypress(self, key, n=1):
+        """takes one key, but can wait for it to be pressed n times"""
         my_const = "key_consumed"
+        counter = 0
         keypress_listener = lambda e: my_const \
             if e.type == pygame.KEYDOWN and e.key == key \
             else EventConsumerInfo.DONT_CARE
 
-        while True:
+        while counter < n:
             if self.listen((keypress_listener,)) == my_const:
-                return
+                counter += 1
+
+
+    def wait_for_keys_timed_out(self, keys, timeout=0):
+        """takes multiple keys and optionally a timeout"""
+        listeners = tuple(lambda e, key=key: key \
+                        if e.type == pygame.KEYDOWN and e.key == key \
+                        else EventConsumerInfo.DONT_CARE 
+                    for key in keys)
+        
+        start = time.time()
+        while timeout == 0 or time.time() - start < timeout:
+            res = self.listen(listeners)
+            if res in keys:
+                return res
+
+        return None
 
 
     def wait_for_seconds(self, seconds):

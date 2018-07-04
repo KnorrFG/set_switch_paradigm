@@ -1,14 +1,13 @@
 from enum import Enum
+from collections import namedtuple
 
 class Orientation(Enum):
     LEFT = 1
     RIGHT = 2
 
-
     def inverted(self):
         return Orientation.RIGHT if self == Orientation.LEFT \
             else Orientation.LEFT
-
 
     def to_id(self):
         return "l" if self == Orientation.LEFT else "r"
@@ -23,3 +22,9 @@ class ImagePair(object):
     def __getitem__(self, orientation):
         return self.left if orientation == Orientation.LEFT \
             else self.right
+
+
+class BlockTarget(Enum):
+    FACE = 1
+    HOUSE = 2
+    UNCLEAR = 3

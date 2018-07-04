@@ -3,7 +3,7 @@ import pygame
 import config as c
 from eventlistener import EventListener, EventConsumerInfo
 from resources import Resources
-from simple_types import Orientation
+from simple_types import *
 import draw
 
 import argparse
@@ -18,14 +18,6 @@ def display(screen, func, *args):
     screen.fill(c.Screen.background)
     func(screen, *args)
     pygame.display.flip()
-
-
-def get_top_left_to_center_on(surface, coords):
-    rect = surface.get_rect()
-    return (
-        coords[0] - rect.width / 2,
-        coords[1] - rect.height / 2
-    )
 
 
 def on_pulse(event, pulse_log):
@@ -50,23 +42,14 @@ def get_inter_block_intervals(n):
 
     while True:
         IBIs = tuple(random.uniform(*c.Paradigm.inter_block_interval) 
-            for _ in range(n))
+            for _ in range(n - 1))
         if is_satisfying(IBIs): 
             return IBIs + (0,)
 
 
-def draw_instruction_text(screen):
-    text = Resources().instruction_text
-    screen.blit(text, get_top_left_to_center_on(text, c.Screen.center))
-
-
 def show_instruction_screen(screen, event_listener):
-    display(screen, draw_instruction_text)
+    display(screen, draw.instruction_text)
     event_listener.wait_for_seconds(c.Paradigm.instruction_duration)
-
-
-def exec_trial(screen, event_listener):
-    pass
 
 
 def get_concurency_list():
@@ -79,33 +62,106 @@ def get_concurency_list():
 
 
 def get_stim_1_orientations():
-    tbp = c.Paradigm.trials_per_block
-    fac1 = tbp // 2
-    if tbp % 2 == 0:
-        fac2 = fac1
-    else:
-        fac2 = tbp - fac1
-        if random.random() > 0.5: 
-            (fac1, fac2) = (fac2, fac1)
+    fac1 = c.Paradigm.trials_per_block // 2
+    fac2 = c.Paradigm.trials_per_block - fac1
+
+    if fac1 != fac2 and random.random() > 0.5: 
+        (fac1, fac2) = (fac2, fac1)
 
     orients = [Orientation.LEFT] * fac1 + [Orientation.RIGHT] * fac2
     random.shuffle(orients)
     return orients
 
 
+def choose_stims(stim_list):
+    return [random.choice(stim_list) for _ in range(c.Paradigm.trials_per_block)]
+
+
+def exec_trials(screen, event_listener, 
+        face_list, house_list, face_orientations, house_orientations):
+    display_onsets = []
+    decisions = []
+    decision_onsets = []
+    RTs = []
+    ITIs = []
+    last_iteration = len(face_list) - 1
+
+    for i, (face, house, face_ori, house_ori) in enumerate(zip(
+            face_list, house_list, face_orientations, house_orientations)):
+        display(screen, draw.stimulus, face, house, face_ori, house_ori)
+        display_onsets.append(time.time())
+        key = event_listener.wait_for_keys_timed_out(c.Keys.answer_keys, 
+            c.Paradigm.trial_timeout)
+
+        if key:
+            decision_onsets.append(time.time())
+            decisions.append(Orientation.LEFT if key == c.Keys.key_left 
+                else Orientation.RIGHT)
+            RTs.append(decision_onsets[-1] - display_onsets[-1])
+            ITI = max(c.Paradigm.min_iti, c.Paradigm.prefered_trial_length - RTs[-1])
+        else:
+            decision_onsets.append(None)
+            decisions.append(None)
+            RTs.append(None)
+            ITI = c.Paradigm.min_iti
+
+        if i == last_iteration:
+            ITI = 0
+        else:
+            display(screen, draw.fixcross)
+            event_listener.wait_for_seconds(ITI)
+
+        ITIs.append(ITI)
+
+    return display_onsets, decisions, decision_onsets, RTs, ITIs
+
+
+def get_block_target(decisions, face_orientations, house_orientations):
+    face_errors = 0; house_errors = 0
+    for dec, face_ori, house_ori in zip(decisions, 
+            face_orientations, house_orientations):
+        if dec != face_ori: face_errors += 1
+        if dec != house_ori: house_errors += 1
+
+    if face_errors <= c.Paradigm.allowed_errors_per_block:
+        return BlockTarget.FACE
+    elif house_errors <= c.Paradigm.allowed_errors_per_block:
+        return BlockTarget.HOUSE
+    else:
+        return BlockTarget.UNCLEAR
+
+
 def exec_block(screen, event_listener):
+    res = Resources()
     start = time.time()
     concurrency_list = get_concurency_list()
-    stim_1_orientations = get_stim_1_orientations()
-    stim_2_orientations = [ori if cong else ori.inverted()
-        for ori, cong in zip(stim_1_orientations, concurrency_list)]
+    face_orientations = get_stim_1_orientations()
+    house_orientations = [ori if cong else ori.inverted()
+        for ori, cong in zip(face_orientations, concurrency_list)]
+    face_list = choose_stims(res.faces)
+    house_list = choose_stims(res.houses)
 
     show_instruction_screen(screen, event_listener)
-    trials = [exec_trial(screen, event_listener) 
-        for _ in range(c.Paradigm.trials_per_block)]
+    presentation_onsets, decisions, decision_onsets, RTs, ITIs = \
+        exec_trials(screen, event_listener, face_list, house_list, 
+            face_orientations, house_orientations)
+    target = get_block_target(decisions, face_orientations, house_orientations)
+    
     return {
-        "trials": trials,
-        "time": (start, time.time())
+        "time": (start, time.time()),
+        "target": target.name,
+        "trial_data":{
+            "presentations_onset": presentation_onsets,
+            "decision_onset": decision_onsets,
+            "decision": [ori.name if ori else "None" for ori in decisions],
+            "RT": RTs,
+            "follwing ITI": ITIs,
+            "was_congruent": concurrency_list,
+            "face_orientation": [ori.name for ori in face_orientations],
+            "house_orientation": [ori.name for ori in house_orientations],
+            "face_id": [stim.name for stim in face_list],
+            "house_id": [stim.name for stim in house_list]
+        }
     }
 
 
@@ -115,13 +171,16 @@ def exec_run(screen, scanner_mode):
     blocks = []
     add_pulse = lambda ev: on_pulse(ev, pulses)
     event_listener = EventListener((add_pulse,))
+    target_counter = {val: 0 for val in BlockTarget}
 
     inter_block_intervals = get_inter_block_intervals(c.Paradigm.blocks_per_run)
     wait_for_pulse(screen, event_listener, scanner_mode)
 
     for ibi in inter_block_intervals:
         blocks.append(exec_block(screen, event_listener))
-
+        target_counter[BlockTarget[blocks[-1]["target"]]] += 1
+        display(screen, draw.feedback, target_counter)
+        event_listener.wait_for_seconds(c.Paradigm.feedback_display_time)
         if ibi > 0:
         # the last ibi will be zero, therefore we can skip this
             display(screen, draw.fixcross)
@@ -129,7 +188,9 @@ def exec_run(screen, scanner_mode):
 
     return {
         "pulses": pulses, 
-        "blocks": block,
+        "blocks": blocks,
+        "block_target_counter": {key.name: val 
+            for key, val in target_counter.items()},
         "inter_block_intervals": inter_block_intervals,
         "time": (start, time.time())
     }
@@ -140,12 +201,9 @@ def save_results(results, savepath):
         pickle.dump(results, file)
 
 
-def load_resources():
-    return {}
-
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--num-runs", "-n", type=int, default="1")
+    parser.add_argument("--num-runs", "-n", type=int, required=True)
     parser.add_argument("--output", "-o", default="results.pkl")
     parser.add_argument("--scanner-mode", "-s", action="store_true")
     args = parser.parse_args()
@@ -154,7 +212,12 @@ def main():
     pygame.font.init()
     screen = pygame.display.set_mode(c.Screen.resolution, pygame.NOFRAME)
     Resources().load_all()
-    run_results = [exec_run(screen, args.scanner_mode) for _ in range(args.num_runs)]
+    run_results = []
+    for _ in range(args.num_runs):
+        run_results.append(exec_run(screen, args.scanner_mode))
+        display(screen, draw.run_over)
+        EventListener().wait_for_keypress(pygame.K_RETURN)
+
     save_results(run_results, args.output)
     pygame.quit()
 
