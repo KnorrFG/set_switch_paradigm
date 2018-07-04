@@ -8,7 +8,7 @@ import draw
 
 import argparse
 import time
-import pickle
+import json
 import random
 import statistics
 import math
@@ -197,8 +197,8 @@ def exec_run(screen, scanner_mode):
 
 
 def save_results(results, savepath):
-    with open(savepath, 'wb') as file:
-        pickle.dump(results, file)
+    with open(savepath, 'w') as file:
+        json.dump(results, file)
 
 
 def main():
