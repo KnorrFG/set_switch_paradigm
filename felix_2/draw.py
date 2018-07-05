@@ -13,6 +13,41 @@ def _get_top_left_to_center_on(surface, coords):
     )
 
 
+def _center(x):
+    if type(x) in [tuple, list]:
+        if len(x) == 2:
+            return (x[0] // 2, x[1] // 2)
+        if len(x) == 4:
+            return (x[3] // 2, x[4] // 2)
+    elif type(x) == pygame.Rect:
+        return (x.width // 2, x.height // 2)
+    elif type(x) == pygame.Surface:
+        return _center(x.get_rect())
+    else:
+        raise ValueError()
+
+
+def blit_to_center(src, target):
+    target.blit(src, _get_top_left_to_center_on(src, _center(target)))
+
+def _scale_to_target(source, target, smooth=False):
+    """target can be a shape tuple or a Surface.
+    In the first case a new surface is created, in the second 
+    its painted upon, and the returned ref is a ref to target"""
+    if type(target) in [tuple, list]:
+        target = pygame.Surface(target)
+
+    sr = source.get_rect(); tr = target.get_rect()
+    src_factor = min(tr[2 + dim] / sr[2 + dim] for dim in range(2))
+    scaled_size = (int(sr.width * src_factor), int(sr.height * src_factor))
+    scaled_inner_frame = pygame.transform.scale(source, scaled_size) \
+        if not smooth else pygame.transform.smoothscale(source, scaled_size) 
+    
+    target.fill(c.Screen.background)
+    blit_to_center(scaled_inner_frame, target)
+    return target
+
+
 def fixcross(surface):
     half_len = c.Fixcross.length // 2
     center = c.Screen.center
@@ -31,9 +66,42 @@ def instruction_text(screen):
     screen.blit(text, _get_top_left_to_center_on(text, c.Screen.center))
 
 
-def stimulus(screen, face, house, face_ori, house_ori):
-    screen.blit(face[face_ori], c.Stimuli.plot_coord)
-    screen.blit(house[house_ori], c.Stimuli.plot_coord)
+def session_instruction(screen):
+    text = Resources().session_instruction
+    size = (max(line.get_rect().width for line in text),
+        sum(line.get_rect().height for line in text))
+    bg = pygame.Surface(size)
+    bg.fill(c.Screen.background)
+
+    get_x = lambda line: (size[0] - line.get_rect().width) * 0.5
+
+    y = 0
+    for line in text:
+        bg.blit(line, (get_x(line), y))
+        y += line.get_rect().height
+
+    sr = screen.get_rect()
+    if size[0] > sr.width or size[1] > sr.height:
+        _scale_to_target(bg, screen, True)
+    else:
+        screen.blit(bg, _get_top_left_to_center_on(bg, c.Screen.center))
+
+
+def stimulus(screen, face, house):
+    res = Resources()
+    small_shape = (max(face.get_rect().width, house.get_rect().width),
+        max(face.get_rect().height, house.get_rect().height))
+    small_shape_center = tuple(x/2 for x in small_shape)
+
+    small_stim_bg = pygame.Surface(small_shape)
+    small_stim_bg.fill(c.Screen.background)
+    small_stim_bg.blit(face, _get_top_left_to_center_on(face, small_shape_center))
+    small_stim_bg.blit(house, _get_top_left_to_center_on(house, small_shape_center))
+
+    big_stim = _scale_to_target(small_stim_bg, res.stim_background)
+
+    sr = screen.get_rect()
+    screen.blit(big_stim, _get_top_left_to_center_on(big_stim, c.Screen.center))
 
 
 def _text_number_combo(res, name, val):
@@ -51,12 +119,12 @@ def _text_number_combo(res, name, val):
     bg.blit(number, (h_center - number.get_rect().width/2, 
         string.get_rect().height + c.Feedback.inner_margin))
     return bg
-    
+
 
 def feedback(screen, target_counter):
     res = Resources()
-    house_counter = _text_number_combo(res, "House", target_counter[BlockTarget.HOUSE])
-    face_counter = _text_number_combo(res, "Face", target_counter[BlockTarget.FACE])
+    house_counter = _text_number_combo(res, "Haus", target_counter[BlockTarget.HOUSE])
+    face_counter = _text_number_combo(res, "Gesicht", target_counter[BlockTarget.FACE])
     horizontal_offset = (c.Feedback.outer_margin + house_counter.get_rect().width) / 2
     house_center = (c.Screen.center[0] - horizontal_offset, c.Screen.center[1])
     face_center = (c.Screen.center[0] + horizontal_offset, c.Screen.center[1])
@@ -66,6 +134,6 @@ def feedback(screen, target_counter):
 
 def run_over(screen):
     res = Resources()
-    run_over_text = res.font.render("The run is over, press Return to continue",
+    run_over_text = res.font.render(c.Text.run_over_text,
         False, c.Text.text_color)
     screen.blit(run_over_text, _get_top_left_to_center_on(run_over_text, c.Screen.center))

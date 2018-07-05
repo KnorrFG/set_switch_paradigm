@@ -65,10 +65,23 @@ class Resources(object):
     def _load_faces():
         return Resources._load_stimuli(c.Stimuli.face_prefix, c.Stimuli.path)
 
+
+    @staticmethod
+    def _make_stim_bg():
+        screen_rect = pygame.display.get_surface().get_rect()
+        bg = pygame.Surface((int(screen_rect.width*c.Stimuli.scale), 
+            int(screen_rect.height*c.Stimuli.scale)))
+        return bg.convert()
+
     
     def _make_instruction_text(self):
-        return self.font.render(c.Text.instruction, 
+        return self.font.render(c.Text.block_instruction, 
             False, c.Text.text_color)
+
+
+    def _make_session_instruction(self):
+        return [self.font.render(line, False, c.Text.text_color) 
+            for line in c.Text.session_instruction]
 
 
     @property
@@ -92,3 +105,15 @@ class Resources(object):
     def houses(self):
         return self._get_or_compute_and_save("houses", 
             Resources._load_houses)
+
+
+    @property
+    def session_instruction(self):
+        return self._get_or_compute_and_save("ses_inst", 
+            self._make_session_instruction)
+
+
+    @property
+    def stim_background(self):
+        return self._get_or_compute_and_save("stim_bg",
+            self._make_stim_bg)

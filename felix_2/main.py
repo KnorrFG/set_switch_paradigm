@@ -30,6 +30,8 @@ def wait_for_pulse(screen, listener, scanner_mode):
     display(screen, draw.fixcross)
     listener.wait_for_keypress(c.Keys.pulse, 
         c.Scanner.num_pulses_till_start if scanner_mode else 1)
+    if not scanner_mode:
+        listener.wait_for_seconds(c.Paradigm.seconds_before_start)
 
 
 def get_inter_block_intervals(n):
@@ -77,8 +79,7 @@ def choose_stims(stim_list):
     return [random.choice(stim_list) for _ in range(c.Paradigm.trials_per_block)]
 
 
-def exec_trials(screen, event_listener, 
-        face_list, house_list, face_orientations, house_orientations):
+def exec_trials(screen, event_listener, face_list, house_list):
     display_onsets = []
     decisions = []
     decision_onsets = []
@@ -86,9 +87,8 @@ def exec_trials(screen, event_listener,
     ITIs = []
     last_iteration = len(face_list) - 1
 
-    for i, (face, house, face_ori, house_ori) in enumerate(zip(
-            face_list, house_list, face_orientations, house_orientations)):
-        display(screen, draw.stimulus, face, house, face_ori, house_ori)
+    for i, (face, house) in enumerate(zip(face_list, house_list)):
+        display(screen, draw.stimulus, face, house)
         display_onsets.append(time.time())
         key = event_listener.wait_for_keys_timed_out(c.Keys.answer_keys, 
             c.Paradigm.trial_timeout)
@@ -143,8 +143,9 @@ def exec_block(screen, event_listener):
 
     show_instruction_screen(screen, event_listener)
     presentation_onsets, decisions, decision_onsets, RTs, ITIs = \
-        exec_trials(screen, event_listener, face_list, house_list, 
-            face_orientations, house_orientations)
+        exec_trials(screen, event_listener, 
+            [face[face_ori] for face, face_ori in zip(face_list, face_orientations)],
+            [house[house_ori] for house, house_ori in zip(house_list, house_orientations)])
     target = get_block_target(decisions, face_orientations, house_orientations)
     
     return {
@@ -201,6 +202,11 @@ def save_results(results, savepath):
         json.dump(results, file)
 
 
+def set_screen_infos(screen):
+    sr = screen.get_rect()
+    c.Screen.resolution = (sr.width, sr.height)
+    c.Screen.center = (sr.width/2, sr.height/2)
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--num-runs", "-n", type=int, required=True)
@@ -211,12 +217,18 @@ def main():
     pygame.init()
     pygame.font.init()
     screen = pygame.display.set_mode(c.Screen.resolution, pygame.NOFRAME)
+    set_screen_infos(screen)
     Resources().load_all()
+    event_listener = EventListener()
+
+    display(screen, draw.session_instruction)
+    event_listener.wait_for_keypress(pygame.K_RETURN)
+
     run_results = []
     for _ in range(args.num_runs):
         run_results.append(exec_run(screen, args.scanner_mode))
         display(screen, draw.run_over)
-        EventListener().wait_for_keypress(pygame.K_RETURN)
+        event_listener.wait_for_keypress(pygame.K_RETURN)
 
     save_results(run_results, args.output)
     pygame.quit()

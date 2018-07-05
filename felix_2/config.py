@@ -5,8 +5,8 @@ class Scanner(object):
 
 
 class Screen(object):
-    resolution = (1920, 1080)
-    center = tuple(r/2 for r in resolution)
+    resolution = (0, 0)
+    center = None
     background = pygame.Color(255, 255, 255)
 
 
@@ -24,6 +24,8 @@ class Keys(object):
 
 
 class Paradigm(object):
+    seconds_before_start = 2
+
     blocks_per_run = 3
     inter_block_interval = (7, 10)
     ibi_mean = (inter_block_interval[0] + inter_block_interval[1]) / 2
@@ -44,7 +46,29 @@ class Paradigm(object):
 
 
 class Text(object):
-    instruction = "Choose a category!"
+    block_instruction = "Wähle eine Kategorie"
+    session_instruction = [line.strip() for line in """
+        Während des Experiments werden immer gleichzeitig Zeichnungen
+        eines Gesichts und eines Hauses gezeigt, die in einem 45° Winkel 
+        nach links oder rechts geneigt sind. 
+        Sie müssen dann die Neigungsrichtung von einer der beiden Zeichnungen angeben. 
+        Das Experiment ist in Blöcke aufgeteilt und in einem Block werden
+        {} Paare gezeigt
+
+        Vor jedem Block wird der Text "{}" angezeigt
+        Dann müssen Sie sich enweder für eine Kategorie (Gesicht oder Haus) entscheiden.
+        Sie haben die freie Wahl, und dürfen sich für jeden Block neu entscheiden.
+        Immer wenn während eines Blocks ein Paar angezeigt wird, ist es Ihre 
+        Aufgabe die Pfeiltasten (Links/Rechts) zu nutzen, um die Richtung anzuzeigen,
+        in die die Zeichnung, die Ihrer gewählten Kategorie entspricht, geneigt ist. 
+        
+        Wenn Sie Fragen haben, wenden Sie sich bitte an den/die Versuchsleiter(in),
+        ansonsten drücken Sie Enter zum fortfahren."""
+            .format(Paradigm.trials_per_block, block_instruction)
+            .split("\n")]
+    
+    run_over_text = "Der Run ist vorrüber, ENTER drücken um fortzufahren."
+
     font = "Arial"
     font_size = 30
     text_color = pygame.Color(0, 0, 0)
@@ -58,8 +82,7 @@ class Stimuli(object):
     background = pygame.Color(255, 255, 255)
     width = 311
     height = 233
-    plot_coord = (int(Screen.center[0] - 0.5 * width),
-        int(Screen.center[1] - 0.5 * height))
+    scale = 0.5 #stimsize = screensize * scale
 
 
 class Feedback(object):
