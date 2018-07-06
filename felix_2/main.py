@@ -12,6 +12,7 @@ import json
 import random
 import statistics
 import math
+import pathlib
 
 
 def display(screen, func, *args):
@@ -150,19 +151,18 @@ def exec_block(screen, event_listener):
     
     return {
         "time": (start, time.time()),
-        "target": target.name,
-        "trial_data":{
-            "presentations_onset": presentation_onsets,
-            "decision_onset": decision_onsets,
-            "decision": [ori.name if ori else "None" for ori in decisions],
-            "RT": RTs,
-            "follwing ITI": ITIs,
-            "was_congruent": concurrency_list,
-            "face_orientation": [ori.name for ori in face_orientations],
-            "house_orientation": [ori.name for ori in house_orientations],
-            "face_id": [stim.name for stim in face_list],
-            "house_id": [stim.name for stim in house_list]
-        }
+        "target": target.name
+    }, {
+        "presentations_onset": presentation_onsets,
+        "decision_onset": decision_onsets,
+        "decision": [ori.name if ori else "None" for ori in decisions],
+        "RT": RTs,
+        "follwing ITI": ITIs,
+        "was_congruent": concurrency_list,
+        "face_orientation": [ori.name for ori in face_orientations],
+        "house_orientation": [ori.name for ori in house_orientations],
+        "face_id": [stim.name for stim in face_list],
+        "house_id": [stim.name for stim in house_list]
     }
 
 
@@ -179,7 +179,7 @@ def exec_run(screen, scanner_mode):
 
     for ibi in inter_block_intervals:
         blocks.append(exec_block(screen, event_listener))
-        target_counter[BlockTarget[blocks[-1]["target"]]] += 1
+        target_counter[BlockTarget[blocks[-1][0]["target"]]] += 1
         display(screen, draw.feedback, target_counter)
         event_listener.wait_for_seconds(c.Paradigm.feedback_display_time)
         if ibi > 0:
@@ -189,17 +189,38 @@ def exec_run(screen, scanner_mode):
 
     return {
         "pulses": pulses, 
-        "blocks": blocks,
         "block_target_counter": {key.name: val 
             for key, val in target_counter.items()},
         "inter_block_intervals": inter_block_intervals,
         "time": (start, time.time())
-    }
+    }, blocks
 
 
-def save_results(results, savepath):
-    with open(savepath, 'w') as file:
-        json.dump(results, file)
+def save(output, output_path: pathlib.Path):
+    with output_path.open('w') as file:
+        if type(output) == str:
+            print(output, file=file)
+        else:
+            json.dump(output, file)
+
+
+def to_tsv(table_dict):
+    return "\n".join(["\t".join(table_dict.keys())] \
+        + ["\t".join(map(str, line)) for line in zip(*table_dict.values())])
+
+
+def save_results(results, subj):
+    output_base = Resources().output_base_path
+    containing_dir = output_base / ("sub-" + str(subj)) / "func" 
+    containing_dir.mkdir(parents=True)
+
+    for ind_run, (run_info, blocks) in enumerate(results):
+        sub_and_run = "sub-{}_run-{:02d}".format(subj, ind_run)
+        save(run_info, containing_dir / (sub_and_run + ".json"))
+        for ind_block, (block_info, trial_table) in enumerate(blocks):
+            sub_run_and_block = sub_and_run + "_block-{:02d}".format(ind_block)
+            save(block_info, containing_dir / (sub_run_and_block + ".json"))
+            save(to_tsv(trial_table), containing_dir / (sub_run_and_block + ".tsv"))
 
 
 def set_screen_infos(screen):
@@ -207,12 +228,38 @@ def set_screen_infos(screen):
     c.Screen.resolution = (sr.width, sr.height)
     c.Screen.center = (sr.width/2, sr.height/2)
 
+
+def castable(obj, target_type):
+    try:
+        _ = target_type(obj)
+        return True
+    except:
+        return False
+
+def subj_id_valid(subj):
+    return type(subj) == str\
+        and len(subj) == 8\
+        and castable(subj, int)
+
+
+def query_subj_id():
+    res = Resources()
+    while True:
+        subj = input("Enter subject ID: ")
+        if subj_id_valid(subj):
+            if (res.output_base_path / ("sub-" + subj)).exists():
+                print("This subject ID was already used")
+            else:
+                return subj
+        else:
+            print("Invalid ID (must have length 8, and be a number)")
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--num-runs", "-n", type=int, required=True)
-    parser.add_argument("--output", "-o", default="results.pkl")
-    parser.add_argument("--scanner-mode", "-s", action="store_true")
+    parser.add_argument("--scanner-mode", "-f", action="store_true")
     args = parser.parse_args()
+
+    subj = query_subj_id()
 
     pygame.init()
     pygame.font.init()
@@ -225,12 +272,12 @@ def main():
     event_listener.wait_for_keypress(pygame.K_RETURN)
 
     run_results = []
-    for _ in range(args.num_runs):
+    for _ in range(c.Paradigm.num_runs):
         run_results.append(exec_run(screen, args.scanner_mode))
         display(screen, draw.run_over)
         event_listener.wait_for_keypress(pygame.K_RETURN)
 
-    save_results(run_results, args.output)
+    save_results(run_results, subj)
     pygame.quit()
 
 if __name__ == '__main__':

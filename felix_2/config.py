@@ -26,14 +26,16 @@ class Keys(object):
 class Paradigm(object):
     seconds_before_start = 2
 
+    num_runs = 1
+
     blocks_per_run = 3
-    inter_block_interval = (7, 10)
+    inter_block_interval = (3, 3)
     ibi_mean = (inter_block_interval[0] + inter_block_interval[1]) / 2
     ibi_mean_error_tollerance = 0.05 * ibi_mean
 
-    trials_per_block = 5
+    trials_per_block = 3
     instruction_duration = 2
-    allowed_errors_per_block = 1
+    allowed_errors_per_block = 0
     feedback_display_time = 2
 
     percent_congruent_trials = 0.5

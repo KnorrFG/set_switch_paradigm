@@ -12,6 +12,9 @@ class Orientation(Enum):
     def to_id(self):
         return "l" if self == Orientation.LEFT else "r"
 
+    def __str__(self):
+        return self.name
+
 
 class ImagePair(object):
     def __init__(self, name, left, right):

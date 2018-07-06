@@ -4,6 +4,7 @@ import config as c
 from simple_types import ImagePair
 
 import pathlib
+import configparser
 
 class Resources(object):
     _instance = None
@@ -30,6 +31,12 @@ class Resources(object):
     def _make_font():
         return pygame.font.SysFont(c.Text.font, c.Text.font_size)
 
+
+    @staticmethod
+    def _load_output_base_path():
+        parser = configparser.ConfigParser()
+        parser.read("config.ini")
+        return pathlib.Path(parser["Path"]["output_base"])
 
     @staticmethod
     def _load_stimuli(prefix, path):
@@ -117,3 +124,9 @@ class Resources(object):
     def stim_background(self):
         return self._get_or_compute_and_save("stim_bg",
             self._make_stim_bg)
+
+
+    @property
+    def output_base_path(self):
+        return self._get_or_compute_and_save("output_base",
+            Resources._load_output_base_path)
