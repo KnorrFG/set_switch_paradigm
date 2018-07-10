@@ -76,10 +76,6 @@ def get_stim_1_orientations():
     return orients
 
 
-def choose_stims(stim_list):
-    return [random.choice(stim_list) for _ in range(c.Paradigm.trials_per_block)]
-
-
 def exec_trials(screen, event_listener, face_list, house_list):
     display_onsets = []
     decisions = []
@@ -139,8 +135,8 @@ def exec_block(screen, event_listener):
     face_orientations = get_stim_1_orientations()
     house_orientations = [ori if cong else ori.inverted()
         for ori, cong in zip(face_orientations, concurrency_list)]
-    face_list = choose_stims(res.faces)
-    house_list = choose_stims(res.houses)
+    face_list = random.sample(res.faces, c.Paradigm.trials_per_block)
+    house_list = random.sample(res.houses, c.Paradigm.trials_per_block)
 
     show_instruction_screen(screen, event_listener)
     presentation_onsets, decisions, decision_onsets, RTs, ITIs = \
@@ -229,30 +225,25 @@ def set_screen_infos(screen):
     c.Screen.center = (sr.width/2, sr.height/2)
 
 
-def castable(obj, target_type):
-    try:
-        _ = target_type(obj)
-        return True
-    except:
-        return False
-
-def subj_id_valid(subj):
-    return type(subj) == str\
-        and len(subj) == 8\
-        and castable(subj, int)
-
-
 def query_subj_id():
     res = Resources()
     while True:
         subj = input("Enter subject ID: ")
-        if subj_id_valid(subj):
+        if len(subj) == 8 and subj.isdigit():
             if (res.output_base_path / ("sub-" + subj)).exists():
                 print("This subject ID was already used")
             else:
                 return subj
         else:
             print("Invalid ID (must have length 8, and be a number)")
+
+
+def display_instructions(screen, event_listener):
+    display(screen, draw.session_instruction)
+    event_listener.wait_for_keypress(pygame.K_RETURN)
+    display(screen, draw.example_screen)
+    event_listener.wait_for_keypress(pygame.K_RETURN)
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -267,9 +258,7 @@ def main():
     set_screen_infos(screen)
     Resources().load_all()
     event_listener = EventListener()
-
-    display(screen, draw.session_instruction)
-    event_listener.wait_for_keypress(pygame.K_RETURN)
+    display_instructions(screen, event_listener)
 
     run_results = []
     for _ in range(c.Paradigm.num_runs):

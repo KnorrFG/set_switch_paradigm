@@ -86,6 +86,11 @@ class Resources(object):
             False, c.Text.text_color)
 
 
+    def _make_instruction_example_text(self):
+        return [self.font.render(line, False, c.Text.text_color) 
+            for line in c.Text.instruction_example]
+
+
     def _make_session_instruction(self):
         return [self.font.render(line, False, c.Text.text_color) 
             for line in c.Text.session_instruction]
@@ -130,3 +135,9 @@ class Resources(object):
     def output_base_path(self):
         return self._get_or_compute_and_save("output_base",
             Resources._load_output_base_path)
+
+
+    @property
+    def instruction_example_text(self):
+        return self._get_or_compute_and_save("instruction_example_text",
+            self._make_instruction_example_text)

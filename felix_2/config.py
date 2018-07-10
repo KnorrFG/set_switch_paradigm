@@ -5,7 +5,7 @@ class Scanner(object):
 
 
 class Screen(object):
-    resolution = (0, 0)
+    resolution = (1024, 800)
     center = None
     background = pygame.Color(255, 255, 255)
 
@@ -64,12 +64,18 @@ class Text(object):
         Aufgabe die Pfeiltasten (Links/Rechts) zu nutzen, um die Richtung anzuzeigen,
         in die die Zeichnung, die Ihrer gewählten Kategorie entspricht, geneigt ist. 
         
-        Wenn Sie Fragen haben, wenden Sie sich bitte an den/die Versuchsleiter(in),
-        ansonsten drücken Sie Enter zum fortfahren."""
+        Drücken Sie Enter zum fortfahren."""
             .format(Paradigm.trials_per_block, block_instruction)
             .split("\n")]
     
     run_over_text = "Der Run ist vorrüber, ENTER drücken um fortzufahren."
+    instruction_example = [line.strip() for line in """
+        Haben sie sich für "Gesicht" entschieden, würden sie hier die linke 
+        Pfeiltaste drücken. Im Fall "Haus" die Rechte.
+
+        Wenn Sie Fragen haben, wenden Sie sich bitte an den/die 
+        Versuchsleiter(in), ansonsten drücken sie Enter um fortzufahren"""
+            .split("\n")]
 
     font = "Arial"
     font_size = 30
@@ -84,7 +90,7 @@ class Stimuli(object):
     background = pygame.Color(255, 255, 255)
     width = 311
     height = 233
-    scale = 0.5 #stimsize = screensize * scale
+    scale = 0.4 #stimsize = screensize * scale
 
 
 class Feedback(object):

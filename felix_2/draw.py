@@ -27,7 +27,7 @@ def _center(x):
         raise ValueError()
 
 
-def blit_to_center(src, target):
+def _blit_to_center(src, target):
     target.blit(src, _get_top_left_to_center_on(src, _center(target)))
 
 def _scale_to_target(source, target, smooth=False):
@@ -44,8 +44,28 @@ def _scale_to_target(source, target, smooth=False):
         if not smooth else pygame.transform.smoothscale(source, scaled_size) 
     
     target.fill(c.Screen.background)
-    blit_to_center(scaled_inner_frame, target)
+    _blit_to_center(scaled_inner_frame, target)
     return target
+
+
+def _render_text(surface, text):
+    size = (max(line.get_rect().width for line in text),
+        sum(line.get_rect().height for line in text))
+    bg = pygame.Surface(size)
+    bg.fill(c.Screen.background)
+
+    get_x = lambda line: (size[0] - line.get_rect().width) * 0.5
+
+    y = 0
+    for line in text:
+        bg.blit(line, (get_x(line), y))
+        y += line.get_rect().height
+
+    sr = surface.get_rect()
+    if size[0] > sr.width or size[1] > sr.height:
+        _scale_to_target(bg, surface, True)
+    else:
+        _blit_to_center(bg, surface)
 
 
 def fixcross(surface):
@@ -66,25 +86,25 @@ def instruction_text(screen):
     screen.blit(text, _get_top_left_to_center_on(text, c.Screen.center))
 
 
-def session_instruction(screen):
-    text = Resources().session_instruction
-    size = (max(line.get_rect().width for line in text),
-        sum(line.get_rect().height for line in text))
-    bg = pygame.Surface(size)
-    bg.fill(c.Screen.background)
-
-    get_x = lambda line: (size[0] - line.get_rect().width) * 0.5
-
-    y = 0
-    for line in text:
-        bg.blit(line, (get_x(line), y))
-        y += line.get_rect().height
-
+def example_screen(screen):
+    res = Resources()
     sr = screen.get_rect()
-    if size[0] > sr.width or size[1] > sr.height:
-        _scale_to_target(bg, screen, True)
-    else:
-        screen.blit(bg, _get_top_left_to_center_on(bg, c.Screen.center))
+    stim = pygame.Surface(res.stim_background.get_rect().size)
+    text = pygame.Surface((sr.width, int(sr.height * 0.33)))
+    stimulus(stim, res.faces[0][Orientation.LEFT], res.houses[0][Orientation.RIGHT])
+    text.fill(c.Screen.background)
+    _render_text(text, res.instruction_example_text)
+
+    x = sr.width / 2
+    target_center_stim = (x , int(0.33 * sr.height))
+    target_center_text = (x, int(0.67 * sr.height))
+
+    screen.blit(stim, _get_top_left_to_center_on(stim, target_center_stim))
+    screen.blit(text, _get_top_left_to_center_on(text, target_center_text))
+
+
+def session_instruction(screen):
+    _render_text(screen, Resources().session_instruction)
 
 
 def stimulus(screen, face, house):
@@ -101,7 +121,7 @@ def stimulus(screen, face, house):
     big_stim = _scale_to_target(small_stim_bg, res.stim_background)
 
     sr = screen.get_rect()
-    screen.blit(big_stim, _get_top_left_to_center_on(big_stim, c.Screen.center))
+    _blit_to_center(big_stim, screen)
 
 
 def _text_number_combo(res, name, val):
