@@ -5,7 +5,7 @@ class Scanner(object):
 
 
 class Screen(object):
-    resolution = (1024, 800)
+    resolution = (0, 0)
     center = None
     background = pygame.Color(255, 255, 255)
 
@@ -26,19 +26,19 @@ class Keys(object):
 class Paradigm(object):
     seconds_before_start = 2
 
-    num_runs = 1
+    num_runs = 5
 
-    blocks_per_run = 3
+    blocks_per_run = 32
     inter_block_interval = (3, 3)
     ibi_mean = (inter_block_interval[0] + inter_block_interval[1]) / 2
     ibi_mean_error_tollerance = 0.05 * ibi_mean
 
-    trials_per_block = 3
+    trials_per_block = 18
     instruction_duration = 2
-    allowed_errors_per_block = 0
+    allowed_errors_per_block = 3
     feedback_display_time = 2
 
-    percent_congruent_trials = 0.5
+    percent_congruent_trials = 0.3
     num_congruent_trials = int(trials_per_block * percent_congruent_trials)
     num_incongruent_trials = trials_per_block - num_congruent_trials
 

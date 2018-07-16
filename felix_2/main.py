@@ -135,8 +135,8 @@ def exec_block(screen, event_listener):
     face_orientations = get_stim_1_orientations()
     house_orientations = [ori if cong else ori.inverted()
         for ori, cong in zip(face_orientations, concurrency_list)]
-    face_list = random.sample(res.faces, c.Paradigm.trials_per_block)
-    house_list = random.sample(res.houses, c.Paradigm.trials_per_block)
+    face_list = [random.choice(res.faces) for _ in range(c.Paradigm.trials_per_block)]
+    house_list = [random.choice(res.houses) for _ in range(c.Paradigm.trials_per_block)]
 
     show_instruction_screen(screen, event_listener)
     presentation_onsets, decisions, decision_onsets, RTs, ITIs = \
