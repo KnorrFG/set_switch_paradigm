@@ -38,6 +38,13 @@ class Resources(object):
         parser.read("config.ini")
         return pathlib.Path(parser["Path"]["output_base"])
 
+
+    @staticmethod
+    def _load_display_position():
+        parser = configparser.ConfigParser()
+        parser.read("config.ini")
+        return parser["Display"]["position"]
+
     @staticmethod
     def _load_stimuli(prefix, path):
         #import ipdb; ipdb.set_trace()
@@ -141,3 +148,9 @@ class Resources(object):
     def instruction_example_text(self):
         return self._get_or_compute_and_save("instruction_example_text",
             self._make_instruction_example_text)
+
+
+    @property
+    def display_position(self):
+        return self._get_or_compute_and_save("display_position",
+            Resources._load_display_position)

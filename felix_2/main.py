@@ -13,6 +13,7 @@ import random
 import statistics
 import math
 import pathlib
+import os
 
 
 def display(screen, func, *args):
@@ -245,13 +246,16 @@ def display_instructions(screen, event_listener):
     event_listener.wait_for_keypress(pygame.K_RETURN)
 
 
+def set_display_position():
+    os.environ['SDL_VIDEO_WINDOW_POS'] = Resources().display_position
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--scanner-mode", "-f", action="store_true")
     args = parser.parse_args()
 
     subj = query_subj_id()
-
+    set_display_position()
     pygame.init()
     pygame.font.init()
     screen = pygame.display.set_mode(c.Screen.resolution, pygame.NOFRAME)
