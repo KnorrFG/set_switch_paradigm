@@ -336,9 +336,10 @@ def do_training(screen, event_listener):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--scanner-mode", "-f", action="store_true")
+    parser.add_argument("--debugging", "-d", action="store_true")
     args = parser.parse_args()
 
-    subj = query_subj_id()
+    subj = query_subj_id() if not args.debugging else "00000000"
     set_display_position()
     pygame.init()
     pygame.font.init()

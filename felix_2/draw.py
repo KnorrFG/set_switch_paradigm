@@ -1,10 +1,16 @@
 import pygame
-from toolz import memoize
+from toolz import memoize, partial, compose, concat, pipe
+from toolz.curried import map, accumulate
 
 from resources import Resources
 from simple_types import *
 import config as c
 
+from operator import add
+import itertools as itt
+
+
+tmap = compose(tuple, map)
 
 def _get_top_left_to_center_on(surface, coords):
     rect = surface.get_rect()
@@ -31,6 +37,12 @@ def _center(x):
 def _blit_to_center(src, target):
     target.blit(src, _get_top_left_to_center_on(src, _center(target)))
 
+def _blit_h_centered(src, target, x):
+    h_target = _surface_height(target)
+    h_src = _surface_height(src)
+    assert h_target >= h_src
+    target.blit(src, (x, (h_target - h_src) // 2))
+
 def _scale_to_target(source, target, smooth=False):
     """target can be a shape tuple or a Surface.
     In the first case a new surface is created, in the second 
@@ -51,6 +63,16 @@ def _scale_to_target(source, target, smooth=False):
 
 _conv_string_to_surface = memoize(lambda s:
     Resources().font.render(s, False, c.Text.text_color))
+_surface_height = lambda s: s.get_rect().height
+_surface_width = lambda s: s.get_rect().width
+_add_margin = lambda x: x + c.Feedback.text_margin
+
+
+@memoize
+def _make_filled_surface(color, size):
+    surface = pygame.Surface(size)
+    surface. fill(color)
+    return surface
 
 
 def render_text(surface, text):
@@ -148,15 +170,63 @@ def _text_number_combo(res, name, val):
     return bg
 
 
+
+@memoize
+def _make_feedback_display_surface(cell_size):
+    def index_to_color(i):
+        if i < c.Feedback.green_abs_diff: return "G"
+        elif i < c.Feedback.yellow_abs_diff: return "Y"
+        else: return "R"
+
+    cell_surface = partial(_make_filled_surface, size=cell_size)
+    cell_colors_right = tmap(index_to_color, range(c.Feedback.yellow_abs_diff + 1))
+    cell_colors = tuple(reversed(cell_colors_right)) + ("G",) + cell_colors_right
+    display_size = (len(cell_colors) * cell_size[0], cell_size[1])
+    display_surface = pygame.Surface(display_size)
+    for i, cell_color in enumerate(cell_colors):
+        display_surface.blit(cell_surface(
+            c.Feedback.color_table[cell_color]), 
+            (i * cell_size[0], 0))
+    
+    return display_surface
+
+
+def _compose_feedback_screen(disp_bg, face_text, house_text, cell_size, diff):
+    pointer_pos = disp_bg.get_rect().width / 2 \
+                    + diff * cell_size[0] \
+                    + face_text.get_rect().width \
+                    + c.Feedback.text_margin
+    surfaces = (face_text, disp_bg, house_text)
+    feed_back_surface = _make_filled_surface(c.Screen.background, (
+        sum(map(_surface_width, surfaces)) + 2 * c.Feedback.text_margin,
+        max(map(_surface_height, surfaces))
+    ))   
+    x_offsets = itt.chain((0,), pipe(surfaces[:-1], map(_surface_width), 
+                                                 map(_add_margin), 
+                                                 accumulate(add)))
+    for offset, surf in zip(x_offsets, surfaces):
+        _blit_h_centered(surf, feed_back_surface, offset)
+    pygame.draw.line(feed_back_surface, c.Feedback.indicator_color, 
+        (pointer_pos, 0), (pointer_pos, _surface_height(feed_back_surface)),
+        c.Feedback.indicator_thickness)
+    return feed_back_surface
+
+
 def feedback(screen, target_counter):
-    res = Resources()
-    house_counter = _text_number_combo(res, "Haus", target_counter[BlockTarget.HOUSE])
-    face_counter = _text_number_combo(res, "Gesicht", target_counter[BlockTarget.FACE])
-    horizontal_offset = (c.Feedback.outer_margin + house_counter.get_rect().width) / 2
-    house_center = (c.Screen.center[0] - horizontal_offset, c.Screen.center[1])
-    face_center = (c.Screen.center[0] + horizontal_offset, c.Screen.center[1])
-    screen.blit(house_counter, _get_top_left_to_center_on(house_counter, house_center))
-    screen.blit(face_counter, _get_top_left_to_center_on(face_counter, face_center))
+    sr = screen.get_rect()
+    cell_size = (int(sr.width * c.Feedback.cell_width_percent),
+                 int(sr.height * c.Feedback.cell_height_percent))
+
+    max_diff = c.Feedback.yellow_abs_diff + 1
+    clamp = lambda diff: max(-max_diff, min(max_diff, diff))
+    _blit_to_center(_compose_feedback_screen(
+        _make_feedback_display_surface(cell_size), 
+        _conv_string_to_surface("Gesicht"),
+        _conv_string_to_surface("Haus"),
+        cell_size, 
+        clamp(target_counter[BlockTarget.HOUSE] - target_counter[BlockTarget.FACE])
+    ), screen)
+
 
 
 def run_over(screen):

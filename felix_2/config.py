@@ -5,9 +5,9 @@ class Scanner(object):
 
 
 class Screen(object):
-    resolution = (1024, 800)
+    resolution = (0, 0)
     center = None
-    background = pygame.Color(255, 255, 255)
+    background = 0xFFFFFF
 
 
 class Fixcross(object):
@@ -78,7 +78,15 @@ class Text(object):
         """Immer wenn während eines Blocks ein Paar angezeigt wird, ist es Ihre 
         Aufgabe die Pfeiltasten (Links/Rechts) zu nutzen, um die Richtung anzuzeigen,
         in die die Zeichnung, die Ihrer gewählten Kategorie entspricht, geneigt
-        ist."""]
+        ist.""",
+        
+        """Für uns ist es wichtig, dass ihre Entscheidungen ausgewogen sind.
+        Deshalb wird ihnen nach jedem Block eine Skala angezeigt an der 
+        Sie ablesen können, ob sie sich bisher öfter für "Gesicht" oder "Haus"
+        entschieden haben, und wie stark das Ungleichgewicht ist.""",
+        
+        """Bitte versuchen sie den gelben Bereich nicht zu verlassen, 
+        und den Block im grünen Bereich zu beenden.""" ]
     
     run_over_text = "Der Run ist vorrüber, ENTER drücken um fortzufahren."
     instruction_example = [line.strip() for line in """
@@ -126,7 +134,20 @@ class Stimuli(object):
 
 
 class Feedback(object):
+    cell_height_percent = 0.05
     percentual_display_width = 0.5
     green_abs_diff = 1
     yellow_abs_diff = 4
-    
+
+    text_margin = 10
+    indicator_color = 0x000000
+    indicator_thickness = 2
+
+    color_table = {
+        "G": 0x00FF00,
+        "Y": 0xFFD700,
+        "R": 0xFF00000
+    }
+
+    num_cells = (yellow_abs_diff + 1) * 2 + 1
+    cell_width_percent = percentual_display_width / num_cells
