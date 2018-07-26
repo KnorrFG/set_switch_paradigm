@@ -33,17 +33,11 @@ class Resources(object):
 
 
     @staticmethod
-    def _load_output_base_path():
+    def _load_ini():
         parser = configparser.ConfigParser()
         parser.read("config.ini")
-        return pathlib.Path(parser["Path"]["output_base"])
+        return parser
 
-
-    @staticmethod
-    def _load_display_position():
-        parser = configparser.ConfigParser()
-        parser.read("config.ini")
-        return parser["Display"]["position"]
 
     @staticmethod
     def _load_stimuli(prefix, path):
@@ -87,31 +81,10 @@ class Resources(object):
             int(screen_rect.height*c.Stimuli.scale)))
         return bg.convert()
 
-    
-    def _make_instruction_text(self):
-        return self.font.render(c.Text.block_instruction, 
-            False, c.Text.text_color)
-
-
-    def _make_instruction_example_text(self):
-        return [self.font.render(line, False, c.Text.text_color) 
-            for line in c.Text.instruction_example]
-
-
-    def _make_session_instruction(self):
-        return [self.font.render(line, False, c.Text.text_color) 
-            for line in c.Text.session_instruction]
-
 
     @property
     def font(self):
         return self._get_or_compute_and_save("font", Resources._make_font)
-
-
-    @property
-    def instruction_text(self):
-        return self._get_or_compute_and_save("instruction_text", 
-            self._make_instruction_text)
 
 
     @property
@@ -127,12 +100,6 @@ class Resources(object):
 
 
     @property
-    def session_instruction(self):
-        return self._get_or_compute_and_save("ses_inst", 
-            self._make_session_instruction)
-
-
-    @property
     def stim_background(self):
         return self._get_or_compute_and_save("stim_bg",
             self._make_stim_bg)
@@ -140,17 +107,25 @@ class Resources(object):
 
     @property
     def output_base_path(self):
-        return self._get_or_compute_and_save("output_base",
-            Resources._load_output_base_path)
-
-
-    @property
-    def instruction_example_text(self):
-        return self._get_or_compute_and_save("instruction_example_text",
-            self._make_instruction_example_text)
+        return self.ini["Path"]["output_base"]
 
 
     @property
     def display_position(self):
-        return self._get_or_compute_and_save("display_position",
-            Resources._load_display_position)
+        return self.ini["Display"]["position"]
+
+
+    @property
+    def ini(self):
+        return self._get_or_compute_and_save("ini",
+            Resources._load_ini)
+
+
+    @property
+    def show_intro(self):
+        return self.ini["Options"]["show_help"].lower().strip() == "true"
+
+
+    @property
+    def do_train_run(self):
+        return self.ini["Options"]["do_train_run"].lower().strip() == "true"

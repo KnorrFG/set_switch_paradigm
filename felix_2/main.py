@@ -1,4 +1,7 @@
 import pygame
+from toolz import pipe, compose, memoize
+from toolz.curried import map
+from operator import methodcaller
 
 import config as c
 from eventlistener import EventListener, EventConsumerInfo
@@ -12,8 +15,8 @@ import json
 import random
 import statistics
 import math
-import pathlib
 import os
+from pathlib import Path
 
 
 def display(screen, func, *args):
@@ -26,6 +29,21 @@ def on_pulse(event, pulse_log):
     if event.type == pygame.KEYDOWN and event.key == c.Keys.pulse:
         pulse_log.append(time.time())
     return EventConsumerInfo.DONT_CARE
+
+
+def display_multipage_text(screen, event_listener, texts):
+    """texts needs to be a string-list, where every string 
+    is the content of one page"""
+
+    def render_and_wait_for_enter(surface_pages):
+        display(screen, draw.render_text, surface_pages)
+        event_listener.wait_for_keypress(pygame.K_RETURN)
+
+    for textpage in map(compose(
+                        map(draw._conv_string_to_surface),
+                        map(methodcaller("strip")),
+                        methodcaller("split", "\n")), texts):
+        render_and_wait_for_enter(tuple(textpage))
 
 
 def wait_for_pulse(screen, listener, scanner_mode):
@@ -193,7 +211,7 @@ def exec_run(screen, scanner_mode):
     }, blocks
 
 
-def save(output, output_path: pathlib.Path):
+def save(output, output_path: Path):
     with output_path.open('w') as file:
         if type(output) == str:
             print(output, file=file)
@@ -206,13 +224,22 @@ def to_tsv(table_dict):
         + ["\t".join(map(str, line)) for line in zip(*table_dict.values())])
 
 
+def get_ses_dir(subj_dir):
+    if not subj_dir.exists():
+        return "ses-1"
+    else:
+        return "ses-" + str(len(tuple(subj_dir.glob("ses-*"))) + 1)
+
+
 def save_results(results, subj):
     output_base = Resources().output_base_path
-    containing_dir = output_base / ("sub-" + str(subj)) / "func" 
+    subj_dir = output_base / ("sub-" + str(subj))
+    ses_dir = get_ses_dir(subj_dir)
+    containing_dir =  subj_dir/ ses_dir / "func"
     containing_dir.mkdir(parents=True)
 
     for ind_run, (run_info, blocks) in enumerate(results):
-        sub_and_run = "sub-{}_run-{:02d}".format(subj, ind_run)
+        sub_and_run = "sub-{}_{}_run-{:02d}".format(subj, ses_dir, ind_run)
         save(run_info, containing_dir / (sub_and_run + ".json"))
         for ind_block, (block_info, trial_table) in enumerate(blocks):
             sub_run_and_block = sub_and_run + "_block-{:02d}".format(ind_block)
@@ -231,7 +258,7 @@ def query_subj_id():
     while True:
         subj = input("Enter subject ID: ")
         if len(subj) == 8 and subj.isdigit():
-            if (res.output_base_path / ("sub-" + subj)).exists():
+            if (Path(res.output_base_path) / ("sub-" + subj)).exists():
                 print("This subject ID was already used")
             else:
                 return subj
@@ -240,14 +267,71 @@ def query_subj_id():
 
 
 def display_instructions(screen, event_listener):
-    display(screen, draw.session_instruction)
-    event_listener.wait_for_keypress(pygame.K_RETURN)
+    display_multipage_text(screen, event_listener, c.Text.session_instruction)
     display(screen, draw.example_screen)
     event_listener.wait_for_keypress(pygame.K_RETURN)
 
 
 def set_display_position():
     os.environ['SDL_VIDEO_WINDOW_POS'] = Resources().display_position
+
+
+def random_elem(pool):
+    while True:
+        yield random.choice(pool)
+
+
+def display_train_stimulus(screen, event_listener, face, house,
+        orientations, target):
+    display(screen, draw.stimulus, 
+        face[orientations[BlockTarget.FACE]], house[orientations[BlockTarget.HOUSE]])
+    start = time.time()
+    matches_mapping = lambda key: \
+        key == c.Keys.key_left and orientations[target] == Orientation.LEFT \
+        or key == c.Keys.key_right and orientations[target] == Orientation.RIGHT
+
+    key = event_listener.wait_for_keys_timed_out(c.Keys.answer_keys, 
+            c.Paradigm.trial_timeout)
+    RT = time.time() - start
+    display(screen, draw.fixcross)
+    event_listener.wait_for_seconds(max((
+        c.Paradigm.prefered_trial_length - RT,
+        c.Paradigm.min_iti)))
+
+    return key and matches_mapping(key)
+
+
+def until_n_correct(n, func):      
+    counter = 0
+    while counter < n:
+        if func(): counter += 1
+        else: counter = 0
+    
+
+def do_train_block(screen, event_listener, target):
+    assert target != BlockTarget.UNCLEAR
+    res = Resources()
+    orientations = random_elem((Orientation.LEFT, Orientation.RIGHT))
+    faces = random_elem(res.faces)
+    houses = random_elem(res.houses)
+    func = lambda: display_train_stimulus(screen, event_listener, 
+        next(faces), next(houses), {
+            BlockTarget.FACE: next(orientations), 
+            BlockTarget.HOUSE: next(orientations)
+        }, target)
+    until_n_correct(c.Training.required_corrects, func)
+
+
+def do_training(screen, event_listener):
+    display_multipage_text(screen, event_listener, 
+        [c.Text.train_run_instruction_faces])
+    do_train_block(screen, event_listener, BlockTarget.FACE)
+    display_multipage_text(screen, event_listener, 
+        [c.Text.train_run_instruction_houses])
+    do_train_block(screen, event_listener, BlockTarget.HOUSE)
+    display_multipage_text(screen, event_listener, 
+        [c.Text.train_run_end_text])
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -260,9 +344,14 @@ def main():
     pygame.font.init()
     screen = pygame.display.set_mode(c.Screen.resolution, pygame.NOFRAME)
     set_screen_infos(screen)
-    Resources().load_all()
+    res = Resources()
+    res.load_all()
     event_listener = EventListener()
-    display_instructions(screen, event_listener)
+
+    if res.show_intro:
+        display_instructions(screen, event_listener)
+    if res.do_train_run:
+        do_training(screen, event_listener)
 
     run_results = []
     for _ in range(c.Paradigm.num_runs):

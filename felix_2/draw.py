@@ -1,4 +1,5 @@
 import pygame
+from toolz import memoize
 
 from resources import Resources
 from simple_types import *
@@ -48,7 +49,13 @@ def _scale_to_target(source, target, smooth=False):
     return target
 
 
-def _render_text(surface, text):
+_conv_string_to_surface = memoize(lambda s:
+    Resources().font.render(s, False, c.Text.text_color))
+
+
+def render_text(surface, text):
+    """text must be an array of pygame.Surfaces"""
+    #import ipdb; ipdb.set_trace()
     size = (max(line.get_rect().width for line in text),
         sum(line.get_rect().height for line in text))
     bg = pygame.Surface(size)
@@ -82,7 +89,7 @@ def fixcross(surface):
 
 
 def instruction_text(screen):
-    text = Resources().instruction_text
+    text = _conv_string_to_surface(c.Text.block_instruction)
     screen.blit(text, _get_top_left_to_center_on(text, c.Screen.center))
 
 
@@ -93,7 +100,7 @@ def example_screen(screen):
     text = pygame.Surface((sr.width, int(sr.height * 0.33)))
     stimulus(stim, res.faces[0][Orientation.LEFT], res.houses[0][Orientation.RIGHT])
     text.fill(c.Screen.background)
-    _render_text(text, res.instruction_example_text)
+    render_text(text, [_conv_string_to_surface(s) for s in c.Text.instruction_example])
 
     x = sr.width / 2
     target_center_stim = (x , int(0.33 * sr.height))
@@ -104,7 +111,7 @@ def example_screen(screen):
 
 
 def session_instruction(screen):
-    _render_text(screen, Resources().session_instruction)
+    render_text(screen, Resources().session_instruction)
 
 
 def stimulus(screen, face, house):
@@ -157,3 +164,4 @@ def run_over(screen):
     run_over_text = res.font.render(c.Text.run_over_text,
         False, c.Text.text_color)
     screen.blit(run_over_text, _get_top_left_to_center_on(run_over_text, c.Screen.center))
+    
