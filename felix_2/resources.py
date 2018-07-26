@@ -107,7 +107,7 @@ class Resources(object):
 
     @property
     def output_base_path(self):
-        return self.ini["Path"]["output_base"]
+        return pathlib.Path(self.ini["Path"]["output_base"])
 
 
     @property
