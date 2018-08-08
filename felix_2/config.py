@@ -136,7 +136,7 @@ class Stimuli(object):
 class Feedback(object):
     cell_height_percent = 0.05
     percentual_display_width = 0.5
-    green_abs_diff = 1
+    green_abs_diff = 2
     yellow_abs_diff = 4
 
     text_margin = 10
