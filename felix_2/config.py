@@ -130,7 +130,7 @@ class Stimuli(object):
     background = pygame.Color(255, 255, 255)
     width = 311
     height = 233
-    scale = 0.4 #stimsize = screensize * scale
+    scale = 0.35 #stimsize = screensize * scale
 
 
 class Feedback(object):
