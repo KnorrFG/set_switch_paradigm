@@ -55,9 +55,9 @@ class Text(object):
     block_instruction = "Wähle eine Kategorie"
     session_instruction = [
         """ Es wird Ihnen nun das Experiment erklärt. Wenn sie Alles gelesen haben,
-        drücken sie Enter um zur nächsten Seite zu gelangen.
+        drücken sie 'Enter' um zur nächsten Seite zu gelangen.
         
-        Drücken sie jetzt Enter""", 
+        Drücken sie jetzt 'Enter'.""", 
 
         """Während des Experiments werden immer gleichzeitig Zeichnungen
         eines Gesichts und eines Hauses gezeigt, die in einem 45° Winkel 
@@ -66,14 +66,14 @@ class Text(object):
         """ Sie müssen dann die Neigungsrichtung von einer der beiden Zeichnungen 
         angeben.""",
 
-        """Das Experiment ist in Blöcke aufgeteilt und in einem Block werden
+        """Das Experiment ist in Blöcke aufgeteilt, und in einem Block werden
         {} Paare gezeigt""".format(Paradigm.trials_per_block),
 
-        """Vor jedem Block wird der Text "{}" angezeigt
-        Dann müssen Sie sich enweder für eine Kategorie (Gesicht oder Haus) 
+        """Vor jedem Block wird der Text '{}' angezeigt
+        Dann müssen Sie sich entweder für 'Gesichter' oder 'Häuser'
         entscheiden.""".format(block_instruction),
 
-        "Sie haben die freie Wahl, und dürfen sich für jeden Block neu entscheiden.",
+        "Sie haben die freie Wahl und dürfen sich für jeden Block neu entscheiden.",
         
         """Immer wenn während eines Blocks ein Paar angezeigt wird, ist es Ihre 
         Aufgabe die Pfeiltasten (Links/Rechts) zu nutzen, um die Richtung anzuzeigen,
@@ -81,20 +81,20 @@ class Text(object):
         ist.""",
         
         """Für uns ist es wichtig, dass ihre Entscheidungen ausgewogen sind.
-        Deshalb wird ihnen nach jedem Block eine Skala angezeigt an der 
-        Sie ablesen können, ob sie sich bisher öfter für "Gesicht" oder "Haus"
-        entschieden haben, und wie stark das Ungleichgewicht ist.""",
+        Deshalb wird ihnen nach jedem Block eine Skala angezeigt, an der 
+        Sie ablesen können, ob sie sich bisher öfter für 'Gesichter' oder Häuser'
+        entschieden haben und wie stark das Ungleichgewicht ist.""",
         
-        """Bitte versuchen sie den gelben Bereich nicht zu verlassen, 
+        """Bitte versuchen sie, den gelben Bereich nicht zu verlassen 
         und den Block im grünen Bereich zu beenden.""" ]
     
-    run_over_text = "Der Run ist vorrüber, ENTER drücken um fortzufahren."
+    run_over_text = "Der Run ist vorrüber, 'ENTER' drücken um fortzufahren."
     instruction_example = [line.strip() for line in """
-        Haben sie sich für "Gesicht" entschieden, würden sie hier die linke 
-        Pfeiltaste drücken. Im Fall "Haus" die Rechte.
+        Haben sie sich für 'Gesichter' entschieden, würden sie hier die linke 
+        Pfeiltaste drücken. Im Fall 'Häuser' die rechte.
 
         Wenn Sie Fragen haben, wenden Sie sich bitte an den/die 
-        Versuchsleiter(in), ansonsten drücken sie Enter um fortzufahren"""
+        Versuchsleiter(in), ansonsten drücken sie 'Enter' um fortzufahren."""
             .split("\n")]
 
     font = "Arial"
@@ -102,24 +102,25 @@ class Text(object):
     text_color = pygame.Color(0, 0, 0)
 
     train_run_instruction_faces = \
-        """Es beginnt nun ein Testdurchlauf. Handeln sie so, wie sie es tun
-        würden, wenn sie sich für "Gesicht" entscheiden.
+        """Es beginnt nun ein Testdurchlauf. 
+        
+        Handeln sie so, als hätten Sie sich für 'Gesichter' entschieden.
 
-        Drücken sie Enter um fortzufahren.
+        Drücken sie 'Enter' um fortzufahren.
         """
     
     train_run_instruction_houses = \
         """Danke.
 
-        Bitte handeln sie nun so, als hätten sie sich für "Haus" entschieden.
+        Bitte handeln sie nun so, als hätten sie sich für 'Häuser' entschieden.
 
-        Drücken sie Enter um fortzufahren."""
+        Drücken sie 'Enter' um fortzufahren."""
 
     train_run_end_text = \
         """Vielen Dank.
 
-        Wir beginnen nun mit dem Experiment, 
-        bitte drücken sie Enter um fortzufahren"""
+        Wir beginnen nun mit dem Experiment. 
+        Bitte drücken Sie 'Enter' um fortzufahren."""
 
 
 class Stimuli(object):
