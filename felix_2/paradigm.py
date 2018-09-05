@@ -172,7 +172,7 @@ def exec_block(screen, event_listener):
         "decision_onset": decision_onsets,
         "decision": [ori.name if ori else "None" for ori in decisions],
         "RT": RTs,
-        "follwing ITI": ITIs,
+        "following_ITI": ITIs,
         "was_congruent": concurrency_list,
         "face_orientation": [ori.name for ori in face_orientations],
         "house_orientation": [ori.name for ori in house_orientations],
