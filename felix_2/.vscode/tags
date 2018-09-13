@@ -1,0 +1,189 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
+BlockTarget	../paradigm_2.py	/^class BlockTarget(Enum):$/;"	kind:class	line:35
+BlockTarget	../simple_types.py	/^class BlockTarget(Enum):$/;"	kind:class	line:30
+FACE	../paradigm_2.py	/^    FACE = 1$/;"	kind:variable	line:36
+FACE	../simple_types.py	/^    FACE = 1$/;"	kind:variable	line:31
+Feedback	../config.py	/^class Feedback(object):$/;"	kind:class	line:137
+Fixcross	../config.py	/^class Fixcross(object):$/;"	kind:class	line:13
+HOUSE	../paradigm_2.py	/^    HOUSE = 2$/;"	kind:variable	line:37
+HOUSE	../simple_types.py	/^    HOUSE = 2$/;"	kind:variable	line:32
+ImagePair	../resources2.py	/^class ImagePair(object):$/;"	kind:class	line:4
+ImagePair	../simple_types.py	/^class ImagePair(object):$/;"	kind:class	line:19
+Keys	../config.py	/^class Keys(object):$/;"	kind:class	line:19
+LEFT	../resources2.py	/^    LEFT = 1$/;"	kind:variable	line:16
+LEFT	../simple_types.py	/^    LEFT = 1$/;"	kind:variable	line:5
+Orientation	../resources2.py	/^class Orientation(Enum):$/;"	kind:class	line:15
+Orientation	../simple_types.py	/^class Orientation(Enum):$/;"	kind:class	line:4
+Paradigm	../config.py	/^class Paradigm(object):$/;"	kind:class	line:26
+RIGHT	../resources2.py	/^    RIGHT = 2$/;"	kind:variable	line:17
+RIGHT	../simple_types.py	/^    RIGHT = 2$/;"	kind:variable	line:6
+Resources	../resources.py	/^class Resources(object):$/;"	kind:class	line:9
+Scanner	../config.py	/^class Scanner(object):$/;"	kind:class	line:3
+Screen	../config.py	/^class Screen(object):$/;"	kind:class	line:7
+Stimuli	../config.py	/^class Stimuli(object):$/;"	kind:class	line:126
+Text	../config.py	/^class Text(object):$/;"	kind:class	line:54
+Training	../config.py	/^class Training:$/;"	kind:class	line:50
+UNCLEAR	../paradigm_2.py	/^    UNCLEAR = 3$/;"	kind:variable	line:38
+UNCLEAR	../simple_types.py	/^    UNCLEAR = 3/;"	kind:variable	line:33
+__getitem__	../resources2.py	/^    def __getitem__(self, orientation):$/;"	kind:member	line:10
+__getitem__	../simple_types.py	/^    def __getitem__(self, orientation):$/;"	kind:member	line:25
+__init__	../resources2.py	/^    def __init__(self, name, left, right):$/;"	kind:member	line:5
+__init__	../simple_types.py	/^    def __init__(self, name, left, right):$/;"	kind:member	line:20
+__new__	../resources.py	/^    def __new__(cls):$/;"	kind:member	line:11
+__str__	../resources2.py	/^    def __str__(self):$/;"	kind:member	line:26
+__str__	../simple_types.py	/^    def __str__(self):$/;"	kind:member	line:15
+_add_margin	../draw.py	/^_add_margin = lambda x: x + c.Feedback.text_margin$/;"	kind:variable	line:68
+_blit_h_centered	../draw.py	/^def _blit_h_centered(src, target, x):$/;"	kind:function	line:40
+_blit_to_center	../draw.py	/^def _blit_to_center(src, target):$/;"	kind:function	line:37
+_center	../draw.py	/^def _center(x):$/;"	kind:function	line:23
+_compose_feedback_screen	../draw.py	/^def _compose_feedback_screen(disp_bg, face_text, house_text, cell_size, diff):$/;"	kind:function	line:194
+_conv_string_to_surface	../draw.py	/^_conv_string_to_surface = memoize(lambda s:$/;"	kind:variable	line:64
+_get_or_compute_and_save	../resources.py	/^    def _get_or_compute_and_save(self, key, func):$/;"	kind:member	line:18
+_get_top_left_to_center_on	../draw.py	/^def _get_top_left_to_center_on(surface, coords):$/;"	kind:function	line:15
+_instance	../resources.py	/^    _instance = None$/;"	kind:variable	line:10
+_load_faces	../resources.py	/^    def _load_faces():$/;"	kind:member	line:72
+_load_houses	../resources.py	/^    def _load_houses():$/;"	kind:member	line:67
+_load_ini	../resources.py	/^    def _load_ini():$/;"	kind:member	line:36
+_load_stimuli	../resources.py	/^    def _load_stimuli(prefix, path):$/;"	kind:member	line:43
+_load_stimuli	../resources2.py	/^def _load_stimuli(prefix, path):$/;"	kind:function	line:30
+_make_feedback_display_surface	../draw.py	/^def _make_feedback_display_surface(cell_size):$/;"	kind:function	line:175
+_make_filled_surface	../draw.py	/^def _make_filled_surface(color, size):$/;"	kind:function	line:72
+_make_font	../resources.py	/^    def _make_font():$/;"	kind:member	line:31
+_make_stim_bg	../resources.py	/^    def _make_stim_bg():$/;"	kind:member	line:77
+_scale_to_target	../draw.py	/^def _scale_to_target(source, target, smooth=False):$/;"	kind:function	line:46
+_surface_height	../draw.py	/^_surface_height = lambda s: s.get_rect().height$/;"	kind:variable	line:66
+_surface_width	../draw.py	/^_surface_width = lambda s: s.get_rect().width$/;"	kind:variable	line:67
+_text_number_combo	../draw.py	/^def _text_number_combo(res, name, val):$/;"	kind:function	line:156
+allowed_errors_per_block	../config.py	/^    allowed_errors_per_block = 2$/;"	kind:variable	line:38
+answer_keys	../config.py	/^    answer_keys = (key_left, key_right)$/;"	kind:variable	line:23
+background	../config.py	/^    background = 0xFFFFFF$/;"	kind:variable	line:10
+background	../config.py	/^    background = pygame.Color(255, 255, 255)$/;"	kind:variable	line:131
+block_instruction	../config.py	/^    block_instruction = "Wähle eine Kategorie"$/;"	kind:variable	line:55
+blocks_per_run	../config.py	/^    blocks_per_run = 16$/;"	kind:variable	line:31
+cell_height_percent	../config.py	/^    cell_height_percent = 0.05$/;"	kind:variable	line:138
+cell_width_percent	../config.py	/^    cell_width_percent = percentual_display_width \/ num_cells$/;"	kind:variable	line:154
+center	../config.py	/^    center = None$/;"	kind:variable	line:9
+color	../config.py	/^    color = pygame.Color(0, 0, 0)$/;"	kind:variable	line:14
+color	../render.py	/^                                    color=c.Text.text_color))$/;"	kind:variable	line:15
+color_key	../config.py	/^    color_key = pygame.Color(255, 255, 255)$/;"	kind:variable	line:127
+color_table	../config.py	/^    color_table = {$/;"	kind:variable	line:147
+config.py	../config.py	1;"	kind:file	line:1
+display	../paradigm.py	/^def display(screen, func, *args):$/;"	kind:function	line:22
+display_instructions	../paradigm.py	/^def display_instructions(screen, event_listener):$/;"	kind:function	line:269
+display_multipage_text	../paradigm.py	/^def display_multipage_text(screen, event_listener, texts):$/;"	kind:function	line:34
+display_position	../resources.py	/^    def display_position(self):$/;"	kind:member	line:113
+display_train_stimulus	../paradigm.py	/^def display_train_stimulus(screen, event_listener, face, house,$/;"	kind:function	line:284
+do_train_block	../paradigm.py	/^def do_train_block(screen, event_listener, target):$/;"	kind:function	line:311
+do_train_block	../paradigm_2.py	/^def do_train_block(event_listener, target):$/;"	kind:function	line:74
+do_train_run	../resources.py	/^    def do_train_run(self):$/;"	kind:member	line:129
+do_training	../paradigm.py	/^def do_training(screen, event_listener):$/;"	kind:function	line:325
+do_training	../paradigm_2.py	/^def do_training(event_listener):$/;"	kind:function	line:87
+draw.py	../draw.py	1;"	kind:file	line:1
+example_screen	../draw.py	/^def example_screen(screen):$/;"	kind:function	line:118
+exec_block	../paradigm.py	/^def exec_block(screen, event_listener):$/;"	kind:function	line:150
+exec_run	../paradigm.py	/^def exec_run(screen, scanner_mode):$/;"	kind:function	line:184
+exec_trials	../paradigm.py	/^def exec_trials(screen, event_listener, face_list, house_list):$/;"	kind:function	line:98
+face_prefix	../config.py	/^    face_prefix = "f"$/;"	kind:variable	line:129
+faces	../resources.py	/^    def faces(self):$/;"	kind:member	line:90
+faces	../resources2.py	/^faces = memoize(lambda: _load_stimuli(c.Stimuli.face_prefix, c.Stimuli.path))$/;"	kind:variable	line:53
+feedback	../draw.py	/^def feedback(screen, target_counter):$/;"	kind:function	line:215
+feedback_display_time	../config.py	/^    feedback_display_time = 2$/;"	kind:variable	line:39
+fixcross	../draw.py	/^def fixcross(surface):$/;"	kind:function	line:100
+font	../config.py	/^    font = "Arial"$/;"	kind:variable	line:100
+font	../resources.py	/^    def font(self):$/;"	kind:member	line:85
+font_size	../config.py	/^    font_size = 30$/;"	kind:variable	line:101
+get_block_target	../paradigm.py	/^def get_block_target(decisions, face_orientations, house_orientations):$/;"	kind:function	line:135
+get_concurency_list	../paradigm.py	/^def get_concurency_list():$/;"	kind:function	line:77
+get_inter_block_intervals	../paradigm.py	/^def get_inter_block_intervals(n):$/;"	kind:function	line:57
+get_ses_dir	../paradigm.py	/^def get_ses_dir(subj_dir):$/;"	kind:function	line:227
+get_stim_1_orientations	../paradigm.py	/^def get_stim_1_orientations():$/;"	kind:function	line:86
+green_abs_diff	../config.py	/^    green_abs_diff = 2$/;"	kind:variable	line:140
+height	../config.py	/^    height = 233$/;"	kind:variable	line:133
+house_prefix	../config.py	/^    house_prefix = "h"$/;"	kind:variable	line:128
+houses	../resources.py	/^    def houses(self):$/;"	kind:member	line:96
+houses	../resources2.py	/^houses = memoize(lambda: _load_stimuli(c.Stimuli.house_prefix, c.Stimuli.path))$/;"	kind:variable	line:54
+ibi_mean	../config.py	/^    ibi_mean = (inter_block_interval[0] + inter_block_interval[1]) \/ 2$/;"	kind:variable	line:33
+ibi_mean_error_tollerance	../config.py	/^    ibi_mean_error_tollerance = 0.05 * ibi_mean$/;"	kind:variable	line:34
+index_to_color	../draw.py	/^    def index_to_color(i):$/;"	kind:function	line:176
+indicator_color	../config.py	/^    indicator_color = 0x000000$/;"	kind:variable	line:144
+indicator_thickness	../config.py	/^    indicator_thickness = 2$/;"	kind:variable	line:145
+ini	../resources.py	/^    def ini(self):$/;"	kind:member	line:118
+instruction_duration	../config.py	/^    instruction_duration = 2$/;"	kind:variable	line:37
+instruction_text	../draw.py	/^def instruction_text(screen):$/;"	kind:function	line:113
+inter_block_interval	../config.py	/^    inter_block_interval = (12, 18)$/;"	kind:variable	line:32
+inverted	../resources2.py	/^    def inverted(self):$/;"	kind:member	line:19
+inverted	../simple_types.py	/^    def inverted(self):$/;"	kind:member	line:8
+key_left	../config.py	/^    key_left = pygame.K_LEFT$/;"	kind:variable	line:21
+key_right	../config.py	/^    key_right = pygame.K_RIGHT$/;"	kind:variable	line:22
+length	../config.py	/^    length = 100$/;"	kind:variable	line:15
+lmap	../render.py	/^lmap = t_compose(list, map)$/;"	kind:variable	line:12
+load	../resources.py	/^        def load(x):$/;"	kind:function	line:48
+load	../resources2.py	/^    def load(x):$/;"	kind:function	line:35
+load_all	../resources.py	/^    def load_all(self):$/;"	kind:member	line:24
+main	../paradigm.py	/^def main():$/;"	kind:function	line:336
+main	../paradigm_2.py	/^def main():$/;"	kind:function	line:95
+min_iti	../config.py	/^    min_iti = 0.2$/;"	kind:variable	line:47
+multi_page_text	../render.py	/^def multi_page_text(event_listener, text_array):$/;"	kind:function	line:22
+num_cells	../config.py	/^    num_cells = (yellow_abs_diff + 1) * 2 + 1$/;"	kind:variable	line:153
+num_congruent_trials	../config.py	/^    num_congruent_trials = int(trials_per_block * percent_congruent_trials)$/;"	kind:variable	line:42
+num_incongruent_trials	../config.py	/^    num_incongruent_trials = trials_per_block - num_congruent_trials$/;"	kind:variable	line:43
+num_pulses_till_start	../config.py	/^    num_pulses_till_start = 10$/;"	kind:variable	line:4
+num_runs	../config.py	/^    num_runs = 5$/;"	kind:variable	line:29
+on_pulse	../paradigm.py	/^def on_pulse(event, pulse_log):$/;"	kind:function	line:28
+on_pulse	../paradigm_2.py	/^def on_pulse(pulse_log, event):$/;"	kind:function	line:68
+output_base_path	../resources.py	/^    def output_base_path(self):$/;"	kind:member	line:108
+paradigm.py	../paradigm.py	1;"	kind:file	line:1
+paradigm_2.py	../paradigm_2.py	1;"	kind:file	line:1
+path	../config.py	/^    path = "img"$/;"	kind:variable	line:130
+percent_congruent_trials	../config.py	/^    percent_congruent_trials = 0.5$/;"	kind:variable	line:41
+percentual_display_width	../config.py	/^    percentual_display_width = 0.5$/;"	kind:variable	line:139
+prefered_trial_length	../config.py	/^    prefered_trial_length = 0.825$/;"	kind:variable	line:46
+pulse	../config.py	/^    pulse = pygame.K_t$/;"	kind:variable	line:20
+pygame_init	../paradigm_2.py	/^def pygame_init(display_position):$/;"	kind:function	line:44
+query_subj_id	../paradigm.py	/^def query_subj_id():$/;"	kind:function	line:256
+query_subj_id	../paradigm_2.py	/^def query_subj_id(output_base_path):$/;"	kind:function	line:55
+random_elem	../paradigm.py	/^def random_elem(pool):$/;"	kind:function	line:279
+random_elem	../paradigm_2.py	/^def random_elem(pool):$/;"	kind:function	line:20
+render.py	../render.py	1;"	kind:file	line:1
+render_and_wait_for_enter	../paradigm.py	/^    def render_and_wait_for_enter(surface_pages):$/;"	kind:function	line:38
+render_text	../draw.py	/^def render_text(surface, text):$/;"	kind:function	line:78
+required_corrects	../config.py	/^    required_corrects = 5$/;"	kind:variable	line:51
+resolution	../config.py	/^    resolution = (0, 0)$/;"	kind:variable	line:8
+resources.py	../resources.py	1;"	kind:file	line:1
+resources2.py	../resources2.py	1;"	kind:file	line:1
+run_over	../draw.py	/^def run_over(screen):$/;"	kind:function	line:232
+run_over_text	../config.py	/^    run_over_text = "Der Run ist vorrüber, 'ENTER' drücken um fortzufahren."$/;"	kind:variable	line:91
+save	../paradigm.py	/^def save(output, output_path: Path):$/;"	kind:function	line:214
+save_results	../paradigm.py	/^def save_results(results, subj):$/;"	kind:function	line:234
+scale	../config.py	/^    scale = 0.35 #stimsize = screensize * scale$/;"	kind:variable	line:134
+seconds_before_start	../config.py	/^    seconds_before_start = 2$/;"	kind:variable	line:27
+session_instruction	../config.py	/^    session_instruction = [$/;"	kind:variable	line:56
+session_instruction	../draw.py	/^def session_instruction(screen):$/;"	kind:function	line:135
+set_display_position	../paradigm.py	/^def set_display_position():$/;"	kind:function	line:275
+set_screen_infos	../paradigm.py	/^def set_screen_infos(screen):$/;"	kind:function	line:250
+show_instruction_screen	../paradigm.py	/^def show_instruction_screen(screen, event_listener):$/;"	kind:function	line:72
+show_intro	../resources.py	/^    def show_intro(self):$/;"	kind:member	line:124
+simple_types.py	../simple_types.py	1;"	kind:file	line:1
+stim_background	../resources.py	/^    def stim_background(self):$/;"	kind:member	line:102
+stimulus	../draw.py	/^def stimulus(screen, face, house):$/;"	kind:function	line:139
+surface_to_screen	../render.py	/^surface_to_screen = memoize(lambda s_text: $/;"	kind:variable	line:17
+text_color	../config.py	/^    text_color = pygame.Color(0, 0, 0)$/;"	kind:variable	line:102
+text_margin	../config.py	/^    text_margin = 10$/;"	kind:variable	line:143
+text_to_surface	../render.py	/^text_to_surface = memoize(lambda text: Text(text, $/;"	kind:variable	line:13
+tmap	../draw.py	/^tmap = compose(tuple, map)$/;"	kind:variable	line:13
+to_id	../resources2.py	/^    def to_id(self):$/;"	kind:member	line:23
+to_id	../simple_types.py	/^    def to_id(self):$/;"	kind:member	line:12
+to_tsv	../paradigm.py	/^def to_tsv(table_dict):$/;"	kind:function	line:222
+trial_timeout	../config.py	/^    trial_timeout = 2.5$/;"	kind:variable	line:45
+trials_per_block	../config.py	/^    trials_per_block = 18$/;"	kind:variable	line:36
+until_n_correct	../paradigm.py	/^def until_n_correct(n, func):      $/;"	kind:function	line:304
+until_n_correct	../paradigm_2.py	/^def until_n_correct(n, func):      $/;"	kind:function	line:25
+wait_for_pulse	../paradigm.py	/^def wait_for_pulse(screen, listener, scanner_mode):$/;"	kind:function	line:49
+width	../config.py	/^    width = 10$/;"	kind:variable	line:16
+width	../config.py	/^    width = 311$/;"	kind:variable	line:132
+yellow_abs_diff	../config.py	/^    yellow_abs_diff = 4$/;"	kind:variable	line:141

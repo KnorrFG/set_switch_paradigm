@@ -1,57 +1,121 @@
-import pygame
-from toolz import pipe, compose, memoize
-from toolz.curried import map
-from operator import methodcaller
-
-import config as c
-from eventlistener import EventListener, EventConsumerInfo
-from resources import Resources
-from simple_types import *
-import draw
-
 import argparse
-import time
 import json
+import os
+import pathlib
 import random
 import statistics
-import math
-import os
-from pathlib import Path
+import sys
+import time
+from configparser import ConfigParser
+from enum import Enum
+from operator import eq
+
+import pygame
+from toolz import compose, curry, partial, pipe
+from toolz.curried import map, take
+
+import config as c
+import render
+import resources as res
+from pyparadigm.eventlistener import *
+from pyparadigm.nny import *
 
 
-def display(screen, func, *args):
-    screen.fill(c.Screen.background)
-    func(screen, *args)
-    pygame.display.flip()
+# =====================================================================
+# Types
+# =====================================================================
+class BlockTarget(Enum):
+    FACE = 1
+    HOUSE = 2
+    UNCLEAR = 3
 
 
-def on_pulse(event, pulse_log):
+# =====================================================================
+# Helpers
+# =====================================================================
+key_by_orientation = lambda orientation: c.Keys.key_left \
+        if orientation == res.Orientation.LEFT else c.Keys.key_right
+
+clamp = lambda diff, max_diff: max(-max_diff, min(max_diff, diff))
+flip_if = lambda cond, two_tuple: (two_tuple[1], two_tuple[0]) if cond else two_tuple
+lmap = compose(list, map)
+
+def random_elem(pool):
+    while True:
+        yield random.choice(pool)
+
+    
+def until_n_correct(n, func):      
+    counter = 0
+    while counter < n:
+        if func(): counter += 1
+        else: counter = 0
+
+# =====================================================================
+# Main-Script
+# =====================================================================
+def pygame_init(display_position):
+    os.environ['SDL_VIDEO_WINDOW_POS'] = display_position
+    pygame.init()
+    pygame.font.init()
+    screen = pygame.display.set_mode(c.Screen.resolution, pygame.NOFRAME)
+    sr = screen.get_rect()
+    c.Screen.resolution = (sr.width, sr.height)
+    c.Screen.center = (sr.width/2, sr.height/2)
+    return screen
+
+
+def query_subj_id(output_base_path):
+    while True:
+        subj = input("Enter subject ID: ")
+        if len(subj) == 8 and subj.isdigit():
+            return subj
+        else:
+            print("Invalid ID (must have length 8, and be a number)")
+
+
+@curry
+def on_pulse(pulse_log, event):
     if event.type == pygame.KEYDOWN and event.key == c.Keys.pulse:
         pulse_log.append(time.time())
     return EventConsumerInfo.DONT_CARE
 
 
-def display_multipage_text(screen, event_listener, texts):
-    """texts needs to be a string-list, where every string 
-    is the content of one page"""
+def do_train_stimulus(event_listener, face, house, 
+                      face_orientation, house_orientation, target):
+    event_listener.listen()
+    render.stimulus(face[face_orientation], house[house_orientation])
+    start = time.time()
+    orientation_by_target = lambda target: \
+        face_orientation if target == BlockTarget.FACE else house_orientation
+    matches_mapping = lambda key: key == key_by_orientation(orientation_by_target(target))
+    key = event_listener.wait_for_keys_timed_out(c.Keys.answer_keys, 
+            c.Paradigm.trial_timeout)
+    RT = time.time() - start
+    render.fixcross()
+    event_listener.wait_for_seconds(max((
+        c.Paradigm.prefered_trial_length - RT,
+        c.Paradigm.min_iti)))
+    return key and matches_mapping(key)
+    
 
-    def render_and_wait_for_enter(surface_pages):
-        display(screen, draw.render_text, surface_pages)
-        event_listener.wait_for_keypress(pygame.K_RETURN)
+def do_train_block(event_listener, target):
+    assert target != BlockTarget.UNCLEAR
+    orientations = random_elem(tuple(res.Orientation))
+    faces = random_elem(res.faces())
+    houses = random_elem(res.houses())
+    func = lambda: do_train_stimulus(event_listener, 
+        next(faces), next(houses), 
+        next(orientations), next(orientations), target)
+    until_n_correct(c.Training.required_corrects, func)
 
-    for textpage in map(compose(
-                        map(draw._conv_string_to_surface),
-                        map(methodcaller("strip")),
-                        methodcaller("split", "\n")), texts):
-        render_and_wait_for_enter(tuple(textpage))
 
-
-def wait_for_pulse(screen, listener, scanner_mode):
-    display(screen, draw.fixcross)
-    listener.wait_for_keypress(c.Keys.pulse, 
-        c.Scanner.num_pulses_till_start if scanner_mode else 1)
-    if not scanner_mode:
-        listener.wait_for_seconds(c.Paradigm.seconds_before_start)
+def do_training(event_listener):
+    render.multi_page_text(event_listener, [c.Text.train_run_instruction_faces])
+    do_train_block(event_listener, BlockTarget.FACE)
+    render.multi_page_text(event_listener, [c.Text.train_run_instruction_houses])
+    do_train_block(event_listener, BlockTarget.HOUSE)
+    render.multi_page_text(event_listener, [c.Text.train_run_end_text])
 
 
 def get_inter_block_intervals(n):
@@ -69,20 +133,6 @@ def get_inter_block_intervals(n):
             return IBIs + (0,)
 
 
-def show_instruction_screen(screen, event_listener):
-    display(screen, draw.instruction_text)
-    event_listener.wait_for_seconds(c.Paradigm.instruction_duration)
-
-
-def get_concurency_list():
-    """returns a list of booleans which indicate whether trial n is congruent
-    or not"""
-    concurrency_list = [True] * c.Paradigm.num_congruent_trials \
-        + [False] * c.Paradigm.num_incongruent_trials
-    random.shuffle(concurrency_list)
-    return concurrency_list
-
-
 def get_stim_1_orientations():
     fac1 = c.Paradigm.trials_per_block // 2
     fac2 = c.Paradigm.trials_per_block - fac1
@@ -90,12 +140,12 @@ def get_stim_1_orientations():
     if fac1 != fac2 and random.random() > 0.5: 
         (fac1, fac2) = (fac2, fac1)
 
-    orients = [Orientation.LEFT] * fac1 + [Orientation.RIGHT] * fac2
+    orients = [res.Orientation.LEFT] * fac1 + [res.Orientation.RIGHT] * fac2
     random.shuffle(orients)
     return orients
 
 
-def exec_trials(screen, event_listener, face_list, house_list):
+def do_trials(event_listener, face_list, house_list):
     display_onsets = []
     decisions = []
     decision_onsets = []
@@ -104,15 +154,17 @@ def exec_trials(screen, event_listener, face_list, house_list):
     last_iteration = len(face_list) - 1
 
     for i, (face, house) in enumerate(zip(face_list, house_list)):
-        display(screen, draw.stimulus, face, house)
+        #to empty the q
+        event_listener.listen()
+        render.stimulus(face, house)
         display_onsets.append(time.time())
         key = event_listener.wait_for_keys_timed_out(c.Keys.answer_keys, 
             c.Paradigm.trial_timeout)
 
         if key:
             decision_onsets.append(time.time())
-            decisions.append(Orientation.LEFT if key == c.Keys.key_left 
-                else Orientation.RIGHT)
+            decisions.append(res.Orientation.LEFT if key == c.Keys.key_left 
+                else res.Orientation.RIGHT)
             RTs.append(decision_onsets[-1] - display_onsets[-1])
             ITI = max(c.Paradigm.min_iti, c.Paradigm.prefered_trial_length - RTs[-1])
         else:
@@ -124,7 +176,7 @@ def exec_trials(screen, event_listener, face_list, house_list):
         if i == last_iteration:
             ITI = 0
         else:
-            display(screen, draw.fixcross)
+            render.fixcross()
             event_listener.wait_for_seconds(ITI)
 
         ITIs.append(ITI)
@@ -136,8 +188,9 @@ def get_block_target(decisions, face_orientations, house_orientations):
     face_errors = 0; house_errors = 0
     for dec, face_ori, house_ori in zip(decisions, 
             face_orientations, house_orientations):
-        if dec != face_ori: face_errors += 1
-        if dec != house_ori: house_errors += 1
+        if face_ori != house_ori:
+            if dec != face_ori: face_errors += 1
+            if dec != house_ori: house_errors += 1
 
     if face_errors <= c.Paradigm.allowed_errors_per_block:
         return BlockTarget.FACE
@@ -147,19 +200,28 @@ def get_block_target(decisions, face_orientations, house_orientations):
         return BlockTarget.UNCLEAR
 
 
-def exec_block(screen, event_listener):
-    res = Resources()
+def get_concurency_list():
+    """returns a list of booleans which indicate whether trial n is congruent
+    or not"""
+    concurrency_list = [True] * c.Paradigm.num_congruent_trials \
+        + [False] * c.Paradigm.num_incongruent_trials
+    random.shuffle(concurrency_list)
+    return concurrency_list
+
+
+def do_block(event_listener):
     start = time.time()
     concurrency_list = get_concurency_list()
     face_orientations = get_stim_1_orientations()
     house_orientations = [ori if cong else ori.inverted()
         for ori, cong in zip(face_orientations, concurrency_list)]
-    face_list = [random.choice(res.faces) for _ in range(c.Paradigm.trials_per_block)]
-    house_list = [random.choice(res.houses) for _ in range(c.Paradigm.trials_per_block)]
+    face_list = [random.choice(res.faces()) for _ in range(c.Paradigm.trials_per_block)]
+    house_list = [random.choice(res.houses()) for _ in range(c.Paradigm.trials_per_block)]
 
-    show_instruction_screen(screen, event_listener)
+    display(render.text_page(c.Text.block_instruction))
+    event_listener.wait_for_seconds(c.Paradigm.instruction_duration)
     presentation_onsets, decisions, decision_onsets, RTs, ITIs = \
-        exec_trials(screen, event_listener, 
+        do_trials(event_listener, 
             [face[face_ori] for face, face_ori in zip(face_list, face_orientations)],
             [house[house_ori] for house, house_ori in zip(house_list, house_orientations)])
     target = get_block_target(decisions, face_orientations, house_orientations)
@@ -180,30 +242,26 @@ def exec_block(screen, event_listener):
         "house_id": [stim.name for stim in house_list]
     }
 
-
-def exec_run(screen, scanner_mode):
+def do_run(event_listener):
     start = time.time()
-    pulses = []
     blocks = []
-    add_pulse = lambda ev: on_pulse(ev, pulses)
-    event_listener = EventListener((add_pulse,))
     target_counter = {val: 0 for val in BlockTarget}
-
     inter_block_intervals = get_inter_block_intervals(c.Paradigm.blocks_per_run)
-    wait_for_pulse(screen, event_listener, scanner_mode)
+    display(render.fixcross())
+    event_listener.wait_for_keypress(c.Keys.pulse, c.Scanner.num_pulses_till_start)
 
     for ibi in inter_block_intervals:
-        blocks.append(exec_block(screen, event_listener))
+        blocks.append(do_block(event_listener))
         target_counter[BlockTarget[blocks[-1][0]["target"]]] += 1
-        display(screen, draw.feedback, target_counter)
+        display(render.feedback(clamp(target_counter[BlockTarget.HOUSE] 
+                                - target_counter[BlockTarget.FACE], c.Feedback.max_diff)))
         event_listener.wait_for_seconds(c.Paradigm.feedback_display_time)
         if ibi > 0:
         # the last ibi will be zero, therefore we can skip this
-            display(screen, draw.fixcross)
+            display(render.fixcross())
             event_listener.wait_for_seconds(ibi)
 
     return {
-        "pulses": pulses, 
         "block_target_counter": {key.name: val 
             for key, val in target_counter.items()},
         "inter_block_intervals": inter_block_intervals,
@@ -211,7 +269,7 @@ def exec_run(screen, scanner_mode):
     }, blocks
 
 
-def save(output, output_path: Path):
+def save(output, output_path: pathlib.Path):
     with output_path.open('w') as file:
         if type(output) == str:
             print(output, file=file)
@@ -231,13 +289,22 @@ def get_ses_dir(subj_dir):
         return "ses-" + str(len(tuple(subj_dir.glob("ses-*"))) + 1)
 
 
-def save_results(results, subj):
-    output_base = Resources().output_base_path
+def save_results(results, subj, ses, pulses, localizer_results, output_base):
     subj_dir = output_base / ("sub-" + str(subj))
-    ses_dir = get_ses_dir(subj_dir)
-    containing_dir =  subj_dir/ ses_dir / "func"
+    ses_dir = f"ses-{ses}"
+    containing_dir = subj_dir/ ses_dir / "func"
     containing_dir.mkdir(parents=True)
 
+    #save pulses
+    save(pulses, containing_dir/ f"sub-{subj}_{ses_dir}_pulses.json")
+    #save localizer_results
+    def save_localizer_block(data, name):
+        file_name = f"sub-{subj}_localizer-{name}"
+        save(data[0], containing_dir / f"{file_name}.json")
+        save(to_tsv(data[1]), containing_dir / f"{file_name}.tsv")
+    save_localizer_block(localizer_results[0], "face")
+    save_localizer_block(localizer_results[1], "house")
+    #save rest
     for ind_run, (run_info, blocks) in enumerate(results):
         sub_and_run = "sub-{}_{}_run-{:02d}".format(subj, ses_dir, ind_run)
         save(run_info, containing_dir / (sub_and_run + ".json"))
@@ -245,123 +312,90 @@ def save_results(results, subj):
             sub_run_and_block = sub_and_run + "_block-{:02d}".format(ind_block)
             save(block_info, containing_dir / (sub_run_and_block + ".json"))
             save(to_tsv(trial_table), containing_dir / (sub_run_and_block + ".tsv"))
+            
 
-
-def set_screen_infos(screen):
-    sr = screen.get_rect()
-    c.Screen.resolution = (sr.width, sr.height)
-    c.Screen.center = (sr.width/2, sr.height/2)
-
-
-def query_subj_id():
-    res = Resources()
+def query_session(output_base, subj):
     while True:
-        subj = input("Enter subject ID: ")
-        if len(subj) == 8 and subj.isdigit():
-            if (Path(res.output_base_path) / ("sub-" + subj)).exists():
-                print("This subject ID was already used")
+        ses = input("Enter Session number: ")
+        if ses in ["1", "2"]:
+            if (output_base / f"sub-{subj}" / f"ses-{ses}").exists():
+                print("Session folder exists already")
             else:
-                return subj
+                return ses
         else:
-            print("Invalid ID (must have length 8, and be a number)")
+            print("Session Id must be 1 or 2")
 
 
-def display_instructions(screen, event_listener):
-    display_multipage_text(screen, event_listener, c.Text.session_instruction)
-    display(screen, draw.example_screen)
-    event_listener.wait_for_keypress(pygame.K_RETURN)
-
-
-def set_display_position():
-    os.environ['SDL_VIDEO_WINDOW_POS'] = Resources().display_position
-
-
-def random_elem(pool):
-    while True:
-        yield random.choice(pool)
-
-
-def display_train_stimulus(screen, event_listener, face, house,
-        orientations, target):
-    display(screen, draw.stimulus, 
-        face[orientations[BlockTarget.FACE]], house[orientations[BlockTarget.HOUSE]])
+def do_localizer_block(event_listener, target):
     start = time.time()
-    matches_mapping = lambda key: \
-        key == c.Keys.key_left and orientations[target] == Orientation.LEFT \
-        or key == c.Keys.key_right and orientations[target] == Orientation.RIGHT
-
-    key = event_listener.wait_for_keys_timed_out(c.Keys.answer_keys, 
-            c.Paradigm.trial_timeout)
-    RT = time.time() - start
-    display(screen, draw.fixcross)
-    event_listener.wait_for_seconds(max((
-        c.Paradigm.prefered_trial_length - RT,
-        c.Paradigm.min_iti)))
-
-    return key and matches_mapping(key)
-
-
-def until_n_correct(n, func):      
-    counter = 0
-    while counter < n:
-        if func(): counter += 1
-        else: counter = 0
-    
-
-def do_train_block(screen, event_listener, target):
-    assert target != BlockTarget.UNCLEAR
-    res = Resources()
-    orientations = random_elem((Orientation.LEFT, Orientation.RIGHT))
-    faces = random_elem(res.faces)
-    houses = random_elem(res.houses)
-    func = lambda: display_train_stimulus(screen, event_listener, 
-        next(faces), next(houses), {
-            BlockTarget.FACE: next(orientations), 
-            BlockTarget.HOUSE: next(orientations)
-        }, target)
-    until_n_correct(c.Training.required_corrects, func)
+    target_is_face = target == BlockTarget.FACE
+    stim_orientations = get_stim_1_orientations()
+    source = res.faces() if target_is_face else res.houses()
+    stim_list = pipe(random_elem(source), 
+                     take(len(stim_orientations)), 
+                     list)
+    face_list, house_list = flip_if(not target_is_face, (
+                                        lmap(lambda ori, stim: stim[ori], 
+                                            stim_orientations,
+                                            stim_list), 
+                                        [None] * len(stim_list))) 
+    display_onsets, decisions, decision_onsets, RTs, ITIs = \
+        do_trials(event_listener, face_list, house_list)
+    return {
+        "time": (start, time.time()),
+        "target": target.name
+    }, {
+        "presentations_onset": display_onsets,
+        "decision_onset": decision_onsets,
+        "decision": [ori.name if ori else "None" for ori in decisions],
+        "RT": RTs,
+        "following_ITI": ITIs,
+        "stim_orientation": [ori.name for ori in stim_orientations],
+        "stim_id": [stim.name for stim in stim_list]
+    }
 
 
-def do_training(screen, event_listener):
-    display_multipage_text(screen, event_listener, 
-        [c.Text.train_run_instruction_faces])
-    do_train_block(screen, event_listener, BlockTarget.FACE)
-    display_multipage_text(screen, event_listener, 
-        [c.Text.train_run_instruction_houses])
-    do_train_block(screen, event_listener, BlockTarget.HOUSE)
-    display_multipage_text(screen, event_listener, 
-        [c.Text.train_run_end_text])
-
+def do_localizer(event_listener):
+    render.multi_page_text(event_listener, c.Text.Localizer.intro)
+    display(render.fixcross())
+    event_listener.wait_for_keypress(c.Keys.pulse, c.Scanner.num_pulses_till_start)
+    face_block = do_localizer_block(event_listener, BlockTarget.FACE)
+    display(render.text_page(c.Text.Localizer.post_first_block))
+    event_listener.wait_for_seconds(c.Paradigm.instruction_duration)
+    house_block = do_localizer_block(event_listener, BlockTarget.HOUSE)
+    display(render.text_page(c.Text.Localizer.end))
+    return face_block, house_block
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--scanner-mode", "-f", action="store_true")
-    parser.add_argument("--debugging", "-d", action="store_true")
-    args = parser.parse_args()
+    conf_ini = ConfigParser()
+    conf_ini.read("config.ini")
+    out_path = pathlib.Path(conf_ini["Path"]["output_base"])
+    subj = "00000000" if len(sys.argv) > 1 else query_subj_id(
+        out_path)
+    ses = "1" if len(sys.argv) > 1 else query_session(
+        out_path, subj)
+    pygame_init(conf_ini["Display"]["position"])
+    scanner_pulses = []
+    event_listener = EventListener((on_pulse(scanner_pulses),))
+    bool_from_conf = lambda name: conf_ini["Options"].getboolean(name)
+    localizer_results = None
 
-    subj = query_subj_id() if not args.debugging else "00000000"
-    set_display_position()
-    pygame.init()
-    pygame.font.init()
-    screen = pygame.display.set_mode(c.Screen.resolution, pygame.NOFRAME)
-    set_screen_infos(screen)
-    res = Resources()
-    res.load_all()
-    event_listener = EventListener()
-
-    if res.show_intro:
-        display_instructions(screen, event_listener)
-    if res.do_train_run:
-        do_training(screen, event_listener)
+    if bool_from_conf("do_localizer"): 
+        localizer_results = do_localizer(event_listener)
+    if bool_from_conf("display_instruction"): 
+        render.multi_page_text(event_listener, c.Text.session_instruction)
+    if bool_from_conf("do_train_run"):
+        do_training(event_listener)
 
     run_results = []
     for _ in range(c.Paradigm.num_runs):
-        run_results.append(exec_run(screen, args.scanner_mode))
-        display(screen, draw.run_over)
+        run_results.append(do_run(event_listener))
+        display(render.run_over())
         event_listener.wait_for_keypress(pygame.K_RETURN)
 
-    save_results(run_results, subj)
+    save_results(run_results, subj, ses, scanner_pulses, localizer_results, out_path)
     pygame.quit()
+
 
 if __name__ == '__main__':
     main()

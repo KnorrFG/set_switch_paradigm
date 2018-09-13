@@ -13,6 +13,7 @@ class Screen(object):
 class Fixcross(object):
     color = pygame.Color(0, 0, 0)
     length = 100
+    factor = 0.1
     width = 10
 
 
@@ -26,7 +27,7 @@ class Keys(object):
 class Paradigm(object):
     seconds_before_start = 2
 
-    num_runs = 5
+    num_runs = 2
 
     blocks_per_run = 16
     inter_block_interval = (12, 18)
@@ -75,18 +76,18 @@ class Text(object):
 
         "Sie haben die freie Wahl und dürfen sich für jeden Block neu entscheiden.",
         
-        """Immer wenn während eines Blocks ein Paar angezeigt wird, ist es Ihre 
-        Aufgabe die Pfeiltasten (Links/Rechts) zu nutzen, um die Richtung anzuzeigen,
-        in die die Zeichnung, die Ihrer gewählten Kategorie entspricht, geneigt
-        ist.""",
-        
-        """Für uns ist es wichtig, dass ihre Entscheidungen ausgewogen sind.
-        Deshalb wird ihnen nach jedem Block eine Skala angezeigt, an der 
-        Sie ablesen können, ob sie sich bisher öfter für 'Gesichter' oder Häuser'
-        entschieden haben und wie stark das Ungleichgewicht ist.""",
-        
+        """Allerdings ist es für uns wichtig, dass ihre Entscheidungen ausgewogen 
+        sind. Deshalb wird ihnen nach jedem Block eine Skala angezeigt, an der
+        Sie ablesen können, ob sie sich bisher öfter für 'Gesichter' oder
+        Häuser' entschieden haben und wie stark das Ungleichgewicht ist.""",
+
         """Bitte versuchen sie, den gelben Bereich nicht zu verlassen 
-        und den Block im grünen Bereich zu beenden.""" ]
+        und den Block im grünen Bereich zu beenden.""",
+
+        """Immer wenn während eines Blocks ein Paar angezeigt wird, ist es Ihre 
+        Aufgabe die linke oder rechte äußere Taste (mit dem jeweiligen
+        Zeigefinger) zu nutzen, um die Richtung anzuzeigen, in die die
+        Zeichnung, die Ihrer gewählten Kategorie entspricht, geneigt ist.""" ]
     
     run_over_text = "Der Run ist vorrüber, 'ENTER' drücken um fortzufahren."
     instruction_example = [line.strip() for line in """
@@ -122,6 +123,34 @@ class Text(object):
         Wir beginnen nun mit dem Experiment. 
         Bitte drücken Sie 'Enter' um fortzufahren."""
 
+    class Localizer:
+        intro = [
+            """Vielen Dank, dass sie an diesem Experiment teilnehmen.
+            Drücken sie während ihnen Text angezeigt wird, 'Enter' zum
+            fortfahren.
+            
+            Drücken sie jetzt 'Enter'""",
+
+            """Bevor wir zur eigentlich Aufgabe kommen müssen wir die für uns 
+            entscheidenden Regionen in ihrem Gehrin lokalisieren. Dafür 
+            werden ihnen zunächst Zeichnungen von Gesichtern präsentiert, die
+            entweder nach links oder rechts geneigt sind.""",
+            
+            """Drücken sie bitte auf dem Gamepad mit dem linken Zeigefinger 
+            die linke äußere Taste, wenn die Zeichnung nach links geneigt ist, und 
+            mit dem rechten Zeigefinger die rechte äußere Taste, 
+            wenn die Zeichnung nach rechts geneigt ist.""",
+
+            f"""Nachdem ihnen {Paradigm.trials_per_block} Gesichter gezeigt wurden
+            wird das ganze nochmal mit Zeichnungen von Häusern wiederholt""",
+
+            "Drücken sie 'Enter' um zu beginnen"
+        ]
+
+        post_first_block = "Vielen Dank, wir beginnen nun mit den Häusern"
+        end = "Vielen Dank, wir beginnen nur mit dem Experiment"
+
+
 
 class Stimuli(object):
     color_key = pygame.Color(255, 255, 255)
@@ -136,9 +165,12 @@ class Stimuli(object):
 
 class Feedback(object):
     cell_height_percent = 0.05
-    percentual_display_width = 0.5
+    percentual_display_width = 0.75
     green_abs_diff = 2
     yellow_abs_diff = 4
+    green_prop = 4
+    yellow_prop = 2
+    max_diff = green_prop + yellow_prop // 2
 
     text_margin = 10
     indicator_color = 0x000000
