@@ -21,7 +21,9 @@ class Keys(object):
     pulse = pygame.K_t
     key_left = pygame.K_LEFT
     key_right = pygame.K_RIGHT
+    next_page = None
     answer_keys = (key_left, key_right)
+    next_page_name = "die linke Taste"
 
 
 class Paradigm(object):
@@ -58,9 +60,9 @@ class Text(object):
     block_instruction = "Wähle eine Kategorie"
     session_instruction = [
         """ Es wird Ihnen nun das Experiment erklärt. Wenn sie Alles gelesen haben,
-        drücken sie 'Enter' um zur nächsten Seite zu gelangen.
+        drücken sie {0} um zur nächsten Seite zu gelangen.
         
-        Drücken sie jetzt 'Enter'.""", 
+        Drücken sie jetzt {0}.""".format(Keys.next_page_name), 
 
         """Während des Experiments werden immer gleichzeitig Zeichnungen
         eines Gesichts und eines Hauses gezeigt, die in einem 45° Winkel 
@@ -91,14 +93,15 @@ class Text(object):
         Zeigefinger zu nutzen, um die Richtung anzuzeigen, in die die
         Zeichnung, die Ihrer gewählten Kategorie entspricht, geneigt ist.""" ]
     
-    run_over_text = "Der Run ist vorrüber, 'ENTER' drücken um fortzufahren."
+    run_over_text = "Der Run ist vorrüber, {} drücken um fortzufahren.".format(
+        Keys.next_page_name)
     instruction_example = [line.strip() for line in """
         Haben sie sich für 'Gesichter' entschieden, würden sie hier die linke 
         Pfeiltaste drücken. Im Fall 'Häuser' die rechte.
 
         Wenn Sie Fragen haben, wenden Sie sich bitte an den/die 
-        Versuchsleiter(in), ansonsten drücken sie 'Enter' um fortzufahren."""
-            .split("\n")]
+        Versuchsleiter(in), ansonsten drücken sie {} um fortzufahren.""".format(
+        Keys.next_page_name).split("\n")]
 
     font = "Arial"
     font_size = 30
@@ -109,34 +112,34 @@ class Text(object):
         
         Handeln sie so, als hätten Sie sich für 'Gesichter' entschieden.
 
-        Drücken sie 'Enter' um fortzufahren.
-        """
+        Drücken sie {} um fortzufahren.
+        """.format(Keys.next_page_name)
     
     train_run_instruction_houses = \
         """Danke.
 
         Bitte handeln sie nun so, als hätten sie sich für 'Häuser' entschieden.
 
-        Drücken sie 'Enter' um fortzufahren."""
+        Drücken sie {} um fortzufahren.""".format( Keys.next_page_name)
 
     train_run_end_text = \
         """Vielen Dank.
 
         Wir beginnen nun mit dem Experiment. 
-        Bitte drücken Sie 'Enter' um fortzufahren."""
+        Bitte drücken Sie {} um fortzufahren.""".format( Keys.next_page_name)
 
     experiment_over = \
         """Sie habens geschaft. Vielen Dank für ihre Teilnahme
 
-        Drücken sie 'Enter' zum beenden"""
+        Drücken sie {} zum beenden""".format( Keys.next_page_name)
 
     class Localizer:
         intro = [
             """Vielen Dank, dass sie an diesem Experiment teilnehmen.
-            Drücken sie, während ihnen Text angezeigt wird, 'Enter' zum
+            Drücken sie, während ihnen Text angezeigt wird, {0} zum
             fortfahren.
             
-            Drücken sie jetzt 'Enter'""",
+            Drücken sie jetzt {0}""".format(Keys.next_page_name),
 
             """Bevor wir zur eigentlich Aufgabe kommen, müssen wir die für uns 
             entscheidenden Regionen in ihrem Gehrin lokalisieren. Dafür 
@@ -148,7 +151,7 @@ class Text(object):
             mit dem rechten Zeigefinger die rechte äußere Taste, 
             wenn die Zeichnung nach rechts geneigt ist.""",
 
-            "Drücken sie 'Enter' um zu beginnen"
+            "Drücken sie {} um zu beginnen".format(Keys.next_page_name)
         ]
 
         post_first_block = "Vielen Dank, wir beginnen nun mit den Häusern"

@@ -378,10 +378,19 @@ def do_localizer(event_listener):
     event_listener.wait_for_seconds(2)
     return face_results, house_results
 
+
+def init_keys(ini):
+    c.Keys.key_left = getattr(pygame, ini["Keys"]["left"])
+    c.Keys.key_right = getattr(pygame, ini["Keys"]["right"])
+    c.Keys.next_page = getattr(pygame, ini["Keys"]["enter"])
+    c.Keys.answer_keys = (c.Keys.key_left, c.Keys.key_right)
+
+
 def main():
     conf_ini = ConfigParser()
     conf_ini.read("config.ini")
     out_path = pathlib.Path(conf_ini["Path"]["output_base"])
+    init_keys(conf_ini)
     subj = "00000000" if len(sys.argv) > 1 else query_subj_id(
         out_path)
     ses = "1" if len(sys.argv) > 1 else query_session(
@@ -405,10 +414,10 @@ def main():
         if i == c.Paradigm.num_runs - 1:
             save_results(run_results, subj, ses, scanner_pulses, localizer_results, out_path)
             display(render.text_page(c.Text.experiment_over))
-            event_listener.wait_for_n_keypresses(pygame.K_RETURN)
+            event_listener.wait_for_n_keypresses(c.Keys.next_page)
         else:
             display(render.text_page(c.Text.run_over_text))
-            event_listener.wait_for_n_keypresses(pygame.K_RETURN)
+            event_listener.wait_for_n_keypresses(c.Keys.next_page)
 
     pygame.quit()
 

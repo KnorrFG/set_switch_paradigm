@@ -36,7 +36,7 @@ def multi_page_text(event_listener, text_array):
     screens = pipe(text_array, 
         map(text_to_surface), 
         map(surface_to_screen))
-    slide_show(screens, partial(event_listener.wait_for_n_keypresses, pygame.K_RETURN))
+    slide_show(screens, partial(event_listener.wait_for_n_keypresses, c.Keys.next_page))
     
 
 def stimulus(face, house):
