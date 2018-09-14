@@ -400,12 +400,16 @@ def main():
         do_training(event_listener)
 
     run_results = []
-    for _ in range(c.Paradigm.num_runs):
+    for i in range(c.Paradigm.num_runs):
         run_results.append(do_run(event_listener))
-        display(render.run_over())
-        event_listener.wait_for_n_keypresses(pygame.K_RETURN)
+        if i == c.Paradigm.num_runs - 1:
+            save_results(run_results, subj, ses, scanner_pulses, localizer_results, out_path)
+            display(render.text_page(c.Text.experiment_over))
+            event_listener.wait_for_n_keypresses(pygame.K_RETURN)
+        else:
+            display(render.text_page(c.Text.run_over_text))
+            event_listener.wait_for_n_keypresses(pygame.K_RETURN)
 
-    save_results(run_results, subj, ses, scanner_pulses, localizer_results, out_path)
     pygame.quit()
 
 

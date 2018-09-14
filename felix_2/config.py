@@ -125,6 +125,11 @@ class Text(object):
         Wir beginnen nun mit dem Experiment. 
         Bitte drücken Sie 'Enter' um fortzufahren."""
 
+    experiment_over = \
+        """Sie habens geschaft. Vielen Dank für ihre Teilnahme
+
+        Drücken sie 'Enter' zum beenden"""
+
     class Localizer:
         intro = [
             """Vielen Dank, dass sie an diesem Experiment teilnehmen.

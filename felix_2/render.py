@@ -63,12 +63,6 @@ def text_page(content):
 
 
 @memoize
-def run_over():
-    return compose(_bg())(
-        Text(c.Text.run_over_text, _font()))
-
-
-@memoize
 def feedback(difference):
     if difference == 0: mdiff = difference
     elif difference < 0: mdiff = difference + 0.5
