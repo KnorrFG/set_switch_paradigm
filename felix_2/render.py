@@ -4,7 +4,7 @@ import random
 import pygame
 
 from pyparadigm.surface_composition import *
-from pyparadigm.nny import *
+from pyparadigm.misc import *
 
 from toolz import partial, memoize, pipe
 from toolz import compose as t_compose
@@ -36,7 +36,7 @@ def multi_page_text(event_listener, text_array):
     screens = pipe(text_array, 
         map(text_to_surface), 
         map(surface_to_screen))
-    slide_show(screens, partial(event_listener.wait_for_keypress, pygame.K_RETURN))
+    slide_show(screens, partial(event_listener.wait_for_n_keypresses, pygame.K_RETURN))
     
 
 def stimulus(face, house):

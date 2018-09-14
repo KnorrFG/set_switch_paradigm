@@ -27,7 +27,7 @@ class Keys(object):
 class Paradigm(object):
     seconds_before_start = 2
 
-    num_runs = 2
+    num_runs = 5
 
     blocks_per_run = 16
     inter_block_interval = (12, 18)
@@ -46,6 +46,8 @@ class Paradigm(object):
     trial_timeout = 2.5
     prefered_trial_length = 0.825
     min_iti = 0.2
+
+    localizer_blocks_per_target = 6
 
 
 class Training:
@@ -79,14 +81,14 @@ class Text(object):
         """Allerdings ist es für uns wichtig, dass ihre Entscheidungen ausgewogen 
         sind. Deshalb wird ihnen nach jedem Block eine Skala angezeigt, an der
         Sie ablesen können, ob sie sich bisher öfter für 'Gesichter' oder
-        Häuser' entschieden haben und wie stark das Ungleichgewicht ist.""",
+        'Häuser' entschieden haben und wie stark das Ungleichgewicht ist.""",
 
         """Bitte versuchen sie, den gelben Bereich nicht zu verlassen 
         und den Block im grünen Bereich zu beenden.""",
 
         """Immer wenn während eines Blocks ein Paar angezeigt wird, ist es Ihre 
-        Aufgabe die linke oder rechte äußere Taste (mit dem jeweiligen
-        Zeigefinger) zu nutzen, um die Richtung anzuzeigen, in die die
+        Aufgabe die linke oder rechte äußere Taste mit dem jeweiligen
+        Zeigefinger zu nutzen, um die Richtung anzuzeigen, in die die
         Zeichnung, die Ihrer gewählten Kategorie entspricht, geneigt ist.""" ]
     
     run_over_text = "Der Run ist vorrüber, 'ENTER' drücken um fortzufahren."
@@ -126,12 +128,12 @@ class Text(object):
     class Localizer:
         intro = [
             """Vielen Dank, dass sie an diesem Experiment teilnehmen.
-            Drücken sie während ihnen Text angezeigt wird, 'Enter' zum
+            Drücken sie, während ihnen Text angezeigt wird, 'Enter' zum
             fortfahren.
             
             Drücken sie jetzt 'Enter'""",
 
-            """Bevor wir zur eigentlich Aufgabe kommen müssen wir die für uns 
+            """Bevor wir zur eigentlich Aufgabe kommen, müssen wir die für uns 
             entscheidenden Regionen in ihrem Gehrin lokalisieren. Dafür 
             werden ihnen zunächst Zeichnungen von Gesichtern präsentiert, die
             entweder nach links oder rechts geneigt sind.""",
@@ -141,14 +143,11 @@ class Text(object):
             mit dem rechten Zeigefinger die rechte äußere Taste, 
             wenn die Zeichnung nach rechts geneigt ist.""",
 
-            f"""Nachdem ihnen {Paradigm.trials_per_block} Gesichter gezeigt wurden
-            wird das ganze nochmal mit Zeichnungen von Häusern wiederholt""",
-
             "Drücken sie 'Enter' um zu beginnen"
         ]
 
         post_first_block = "Vielen Dank, wir beginnen nun mit den Häusern"
-        end = "Vielen Dank, wir beginnen nur mit dem Experiment"
+        end = "Vielen Dank, wir beginnen nur mit dem Hauptexperiment"
 
 
 

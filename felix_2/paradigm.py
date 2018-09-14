@@ -18,7 +18,7 @@ import config as c
 import render
 import resources as res
 from pyparadigm.eventlistener import *
-from pyparadigm.nny import *
+from pyparadigm.misc import *
 
 
 # =====================================================================
@@ -89,7 +89,7 @@ def do_train_stimulus(event_listener, face, house,
     orientation_by_target = lambda target: \
         face_orientation if target == BlockTarget.FACE else house_orientation
     matches_mapping = lambda key: key == key_by_orientation(orientation_by_target(target))
-    key = event_listener.wait_for_keys_timed_out(c.Keys.answer_keys, 
+    key = event_listener.wait_for_keys(c.Keys.answer_keys, 
             c.Paradigm.trial_timeout)
     RT = time.time() - start
     render.fixcross()
@@ -158,7 +158,7 @@ def do_trials(event_listener, face_list, house_list):
         event_listener.listen()
         render.stimulus(face, house)
         display_onsets.append(time.time())
-        key = event_listener.wait_for_keys_timed_out(c.Keys.answer_keys, 
+        key = event_listener.wait_for_keys(c.Keys.answer_keys, 
             c.Paradigm.trial_timeout)
 
         if key:
@@ -248,7 +248,7 @@ def do_run(event_listener):
     target_counter = {val: 0 for val in BlockTarget}
     inter_block_intervals = get_inter_block_intervals(c.Paradigm.blocks_per_run)
     display(render.fixcross())
-    event_listener.wait_for_keypress(c.Keys.pulse, c.Scanner.num_pulses_till_start)
+    event_listener.wait_for_n_keypresses(c.Keys.pulse, c.Scanner.num_pulses_till_start)
 
     for ibi in inter_block_intervals:
         blocks.append(do_block(event_listener))
@@ -298,12 +298,15 @@ def save_results(results, subj, ses, pulses, localizer_results, output_base):
     #save pulses
     save(pulses, containing_dir/ f"sub-{subj}_{ses_dir}_pulses.json")
     #save localizer_results
-    def save_localizer_block(data, name):
-        file_name = f"sub-{subj}_localizer-{name}"
-        save(data[0], containing_dir / f"{file_name}.json")
-        save(to_tsv(data[1]), containing_dir / f"{file_name}.tsv")
-    save_localizer_block(localizer_results[0], "face")
-    save_localizer_block(localizer_results[1], "house")
+    def save_loc_blocks(blocks, name):
+        for i, block in enumerate(blocks):
+            file_name = f"sub-{subj}_localizer-{name}_block-{i}"
+            save(block[0], containing_dir / f"{file_name}.json")
+            save(to_tsv(block[1]), containing_dir / f"{file_name}.tsv")
+
+    if localizer_results:
+        save_loc_blocks(localizer_results[0], "face")
+        save_loc_blocks(localizer_results[1], "house")
     #save rest
     for ind_run, (run_info, blocks) in enumerate(results):
         sub_and_run = "sub-{}_{}_run-{:02d}".format(subj, ses_dir, ind_run)
@@ -358,13 +361,22 @@ def do_localizer_block(event_listener, target):
 def do_localizer(event_listener):
     render.multi_page_text(event_listener, c.Text.Localizer.intro)
     display(render.fixcross())
-    event_listener.wait_for_keypress(c.Keys.pulse, c.Scanner.num_pulses_till_start)
-    face_block = do_localizer_block(event_listener, BlockTarget.FACE)
-    display(render.text_page(c.Text.Localizer.post_first_block))
-    event_listener.wait_for_seconds(c.Paradigm.instruction_duration)
-    house_block = do_localizer_block(event_listener, BlockTarget.HOUSE)
+    event_listener.wait_for_n_keypresses(c.Keys.pulse, c.Scanner.num_pulses_till_start)
+    face_results = []
+    house_results = []
+    ibis = get_inter_block_intervals(2 * c.Paradigm.localizer_blocks_per_target)
+
+    for i in range(c.Paradigm.localizer_blocks_per_target):
+        face_results.append(do_localizer_block(event_listener, BlockTarget.FACE))
+        display(render.fixcross())
+        event_listener.wait_for_seconds(ibis[2 * i])
+        house_results.append(do_localizer_block(event_listener, BlockTarget.HOUSE))
+        display(render.fixcross())
+        event_listener.wait_for_seconds(ibis[2 * i + 1])
+    
     display(render.text_page(c.Text.Localizer.end))
-    return face_block, house_block
+    event_listener.wait_for_seconds(2)
+    return face_results, house_results
 
 def main():
     conf_ini = ConfigParser()
@@ -391,7 +403,7 @@ def main():
     for _ in range(c.Paradigm.num_runs):
         run_results.append(do_run(event_listener))
         display(render.run_over())
-        event_listener.wait_for_keypress(pygame.K_RETURN)
+        event_listener.wait_for_n_keypresses(pygame.K_RETURN)
 
     save_results(run_results, subj, ses, scanner_pulses, localizer_results, out_path)
     pygame.quit()
