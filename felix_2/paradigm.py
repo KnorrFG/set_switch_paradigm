@@ -420,7 +420,7 @@ def main():
             event_listener.wait_for_n_keypresses(c.Keys.next_page)
 
     pygame.quit()
-
+    
 
 if __name__ == '__main__':
     main()

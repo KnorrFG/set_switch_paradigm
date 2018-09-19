@@ -39,8 +39,10 @@ def _load_stimuli(prefix, path):
     imagePairs = []
 
     def load(x):
-        img = pygame.image.load(str(x)).convert()
-        img.set_colorkey(c.Stimuli.color_key, pygame.RLEACCEL)
+        img = pygame.image.load(str(x)).convert_alpha()
+        pArr = pygame.PixelArray(img)
+        pArr.replace((255, 255, 255, 255), (0, 0, 0, 0))
+        pArr.close()
         return img
 
     i = 0
