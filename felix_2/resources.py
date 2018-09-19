@@ -40,8 +40,9 @@ def _load_stimuli(prefix, path):
 
     def load(x):
         img = pygame.image.load(str(x)).convert_alpha()
-        with pygame.PixelArray(img) as pArr:
-            pArr.replace((255, 255, 255, 255), (0, 0, 0, 0))
+        pArr = pygame.PixelArray(img)
+        pArr.replace((255, 255, 255, 255), (0, 0, 0, 0))
+        img.unlock()
         return img
 
     i = 0
