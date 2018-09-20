@@ -417,10 +417,10 @@ def main():
             event_listener.wait_for_n_keypresses(c.Keys.next_page)
         else:
             display(render.text_page(c.Text.run_over_text))
-            event_listener.wait_for_n_keypresses(c.Keys.next_page)
+            event_listener.wait_for_n_keypresses(pygame.K_RETURN)
 
     pygame.quit()
-    
+
 
 if __name__ == '__main__':
     main()
