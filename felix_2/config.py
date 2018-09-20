@@ -93,7 +93,7 @@ class Text(object):
         Zeigefinger zu nutzen, um die Richtung anzuzeigen, in die die
         Zeichnung, die Ihrer gewählten Kategorie entspricht, geneigt ist.""" ]
     
-    run_over_text = "Der Run ist vorrüber, {} drücken um fortzufahren.".format(
+    run_over_text = "Der Run ist vorrüber, einen Moment".format(
         Keys.next_page_name)
     instruction_example = [line.strip() for line in """
         Haben sie sich für 'Gesichter' entschieden, würden sie hier die linke 
