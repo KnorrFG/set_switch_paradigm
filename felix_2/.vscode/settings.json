@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/home/klipsy1.psych.tu-dresden.de/knorr/miniconda3/envs/par_33_2/bin/python",
+    "python.pythonPath": "C:\\Python37\\python.exe",
     "python.linting.enabled": false,
     "python.unitTest.promptToConfigure": false,
     "python.unitTest.pyTestEnabled": false,

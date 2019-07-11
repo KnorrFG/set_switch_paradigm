@@ -90,7 +90,7 @@ def do_train_stimulus(event_listener, face, house,
         face_orientation if target == BlockTarget.FACE else house_orientation
     matches_mapping = lambda key: key == key_by_orientation(orientation_by_target(target))
     key = event_listener.wait_for_keys(c.Keys.answer_keys, 
-            c.Paradigm.trial_timeout)
+            timeout=c.Paradigm.trial_timeout)
     RT = time.time() - start
     render.fixcross()
     event_listener.wait_for_seconds(max((
@@ -159,7 +159,7 @@ def do_trials(event_listener, face_list, house_list):
         render.stimulus(face, house)
         display_onsets.append(time.time())
         key = event_listener.wait_for_keys(c.Keys.answer_keys, 
-            c.Paradigm.trial_timeout)
+            timeout=c.Paradigm.trial_timeout)
 
         if key:
             decision_onsets.append(time.time())
